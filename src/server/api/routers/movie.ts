@@ -3,18 +3,7 @@ import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { env } from "~/env";
 import { movieSchema, type Movie } from "~/lib/types";
-
-const BTTF_TRILOGY_IDS = new Set([105, 165, 196]);
-
-function getUnitPrice(id: number): number {
-  return BTTF_TRILOGY_IDS.has(id) ? 15 : 20;
-}
-
-function getDiscountRate(distinctBttfCount: number): number {
-  if (distinctBttfCount >= 3) return 0.2;
-  if (distinctBttfCount >= 2) return 0.1;
-  return 0;
-}
+import { getDiscountSummary, getUnitPrice } from "~/lib/pricing";
 
 export const movieRouter = createTRPCRouter({
   searchMovies: publicProcedure
@@ -69,17 +58,7 @@ export const movieRouter = createTRPCRouter({
       }),
     )
     .query(({ input }): { discountRate: number; discountAmount: number } => {
-      const distinctBttfCount = input.items.filter((item) =>
-        BTTF_TRILOGY_IDS.has(item.id),
-      ).length;
-
-      const discountRate = getDiscountRate(distinctBttfCount);
-
-      const bttfTotal = input.items
-        .filter((item) => BTTF_TRILOGY_IDS.has(item.id))
-        .reduce((sum, item) => sum + getUnitPrice(item.id) * item.quantity, 0);
-
-      const discountAmount = bttfTotal * discountRate;
+      const { discountRate, discountAmount } = getDiscountSummary(input.items);
 
       return { discountRate, discountAmount };
     }),
