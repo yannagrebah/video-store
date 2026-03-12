@@ -46,7 +46,7 @@ async function generateInvoicePdf(data: InvoiceData): Promise<Uint8Array> {
   let y = height - 56;
 
   // Store title
-  page.drawText("VideoStore", {
+  page.drawText("VIDEOSTORE", {
     x: marginX,
     y,
     size: 20,
