@@ -1,4 +1,5 @@
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+import { formatCurrency } from "~/lib/utils";
 
 type InvoiceLineItem = {
   title: string;
@@ -166,13 +167,13 @@ async function generateInvoicePdf(data: InvoiceData): Promise<Uint8Array> {
       size: 10,
       font,
     });
-    page.drawText(`${item.unitPrice.toFixed(2)} €`, {
+    page.drawText(formatCurrency(item.unitPrice), {
       x: colX.unit,
       y,
       size: 10,
       font,
     });
-    page.drawText(`${item.lineTotal.toFixed(2)} €`, {
+    page.drawText(formatCurrency(item.lineTotal), {
       x: colX.line,
       y,
       size: 10,
@@ -201,7 +202,7 @@ async function generateInvoicePdf(data: InvoiceData): Promise<Uint8Array> {
     size: 10,
     font,
   });
-  page.drawText(`${subtotal.toFixed(2)} €`, {
+  page.drawText(formatCurrency(subtotal), {
     x: valueX,
     y: y - 4,
     size: 10,
@@ -216,7 +217,7 @@ async function generateInvoicePdf(data: InvoiceData): Promise<Uint8Array> {
     size: 10,
     font,
   });
-  page.drawText(`-${discountAmount.toFixed(2)} €`, {
+  page.drawText(`-${formatCurrency(discountAmount)}`, {
     x: valueX,
     y: y - 4,
     size: 10,
@@ -232,7 +233,7 @@ async function generateInvoicePdf(data: InvoiceData): Promise<Uint8Array> {
     size: 12,
     font: boldFont,
   });
-  page.drawText(`${total.toFixed(2)} €`, {
+  page.drawText(formatCurrency(total), {
     x: valueX,
     y: y - 4,
     size: 12,

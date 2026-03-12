@@ -10,6 +10,7 @@ import { useCartTotal } from "~/hooks/use-cart-total";
 import { useCartDiscount } from "~/hooks/use-cart-discount";
 import { cartAtom } from "~/lib/atoms";
 import type { Movie } from "~/lib/types";
+import { formatCurrency } from "~/lib/utils";
 
 const MovieOrder = () => {
   const [cartItems, setCartItems] = useAtom(cartAtom);
@@ -51,7 +52,7 @@ const MovieOrder = () => {
   return (
     <>
       <MovieSearchInput onSelect={handleSelect} />
-      <article className="max-h-[50lvh] overflow-y-auto">
+      <article className="max-h-[50lvh] overflow-y-auto px-4">
         <MovieCartList
           movieCartItems={cartItems}
           onQuantityChange={handleQuantityChange}
@@ -66,22 +67,22 @@ const MovieOrder = () => {
               <Skeleton className="h-5 w-20" />
             ) : (
               <span className="text-foreground text-sm font-medium">
-                {subtotal.toFixed(2)} €
+                {formatCurrency(subtotal)}
               </span>
             )}
           </div>
 
           {discountAmount > 0 && (
             <div className="flex items-center justify-between">
-              <span className="text-sm text-emerald-600 dark:text-emerald-400">
+              <span className="text-discount text-sm">
                 Discount ({(discountRate * 100).toFixed(0)}% on Back to the
                 Future)
               </span>
               {isLoading ? (
                 <Skeleton className="h-5 w-20" />
               ) : (
-                <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
-                  -{discountAmount.toFixed(2)} €
+                <span className="text-discount text-sm font-medium">
+                  -{formatCurrency(discountAmount)}
                 </span>
               )}
             </div>
@@ -95,7 +96,7 @@ const MovieOrder = () => {
               <Skeleton className="h-7 w-24" />
             ) : (
               <span className="text-foreground text-xl font-bold">
-                {finalTotal.toFixed(2)} €
+                {formatCurrency(finalTotal)}
               </span>
             )}
           </div>

@@ -10,6 +10,7 @@ import { cartAtom } from "~/lib/atoms";
 import { useCartDiscount } from "~/hooks/use-cart-discount";
 import { useCartTotal } from "~/hooks/use-cart-total";
 import { Skeleton } from "~/components/ui/skeleton";
+import { formatCurrency } from "~/lib/utils";
 import { api } from "~/trpc/react";
 
 type InvoiceSnapshot = {
@@ -97,7 +98,7 @@ const PurchaseSuccess = () => {
   return (
     <Card>
       <CardContent className="flex flex-col items-center gap-4 py-10 text-center">
-        <CircleCheck className="size-16 text-emerald-600 dark:text-emerald-400" />
+        <CircleCheck className="text-discount size-16" />
         <div className="flex flex-col gap-1">
           <h2 className="text-foreground text-xl font-bold">
             Thank you for your purchase!
@@ -120,22 +121,22 @@ const PurchaseSuccess = () => {
                   <Skeleton className="h-5 w-20" />
                 ) : (
                   <span className="text-foreground font-medium">
-                    {subtotal.toFixed(2)} €
+                    {formatCurrency(subtotal)}
                   </span>
                 )}
               </div>
 
               {discountAmount > 0 && (
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-emerald-600 dark:text-emerald-400">
+                  <span className="text-discount">
                     Discount ({(discountRate * 100).toFixed(0)}% on Back to the
                     Future)
                   </span>
                   {showLoading ? (
                     <Skeleton className="h-5 w-20" />
                   ) : (
-                    <span className="font-medium text-emerald-600 dark:text-emerald-400">
-                      -{discountAmount.toFixed(2)} €
+                    <span className="text-discount font-medium">
+                      -{formatCurrency(discountAmount)}
                     </span>
                   )}
                 </div>
@@ -149,7 +150,7 @@ const PurchaseSuccess = () => {
                   <Skeleton className="h-7 w-24" />
                 ) : (
                   <span className="text-foreground text-base font-bold">
-                    {total.toFixed(2)} €
+                    {formatCurrency(total)}
                   </span>
                 )}
               </div>
@@ -160,9 +161,10 @@ const PurchaseSuccess = () => {
         <Button
           onClick={handleDownloadInvoice}
           disabled={createInvoice.isPending || cartItems.length === 0}
-          className="mt-2"
+          className="mt-2 h-12 text-2xl font-bold md:w-1/3"
+          size={"lg"}
         >
-          <Download className="mr-2 size-4" />
+          <Download className="mr-2" size={24} />
           {createInvoice.isPending
             ? "Generating invoice..."
             : "Download invoice"}

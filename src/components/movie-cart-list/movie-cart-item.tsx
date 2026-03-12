@@ -7,6 +7,7 @@ import { Skeleton } from "~/components/ui/skeleton";
 import MovieInfo from "~/components/movie-info";
 import { useMoviePrice } from "~/hooks/use-movie-price";
 import type { MovieCart } from "~/lib/types";
+import { formatCurrency } from "~/lib/utils";
 
 const MovieCartItem = ({
   id,
@@ -37,7 +38,7 @@ const MovieCartItem = ({
             <Skeleton className="h-5 w-16" />
           ) : (
             <span className="text-foreground w-16 text-right text-sm font-semibold">
-              {totalPrice.toFixed(2)} €
+              {formatCurrency(totalPrice)}
             </span>
           )}
           <Input
