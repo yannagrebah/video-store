@@ -24,16 +24,17 @@ const Cart = () => {
   }
 
   return (
-    <section className="container space-y-2">
+    <>
       <MovieOrder />
       <Button
         onClick={handleConfirm}
         disabled={cartItems.length === 0}
-        className="w-full"
+        className="ml-auto block h-12 w-full text-2xl font-bold md:w-1/3"
+        size={"lg"}
       >
         Confirm Purchase
       </Button>
-    </section>
+    </>
   );
 };
 
