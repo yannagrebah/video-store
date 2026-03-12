@@ -13,7 +13,7 @@ const MovieCartList = ({
   onDelete: (id: number) => void;
 }) => {
   return (
-    <ul className="py-6">
+    <ul className="space-y-4 py-6">
       {movieCartItems.length === 0 && (
         <li className="text-muted-foreground text-center">
           Your cart is empty. Add some movies to get started!
