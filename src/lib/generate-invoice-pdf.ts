@@ -1,4 +1,7 @@
+import { readFileSync } from "fs";
+import path from "path";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+import fontkit from "@pdf-lib/fontkit";
 import { formatCurrency } from "~/lib/utils";
 
 type InvoiceLineItem = {
@@ -21,9 +24,18 @@ async function generateInvoicePdf(data: InvoiceData): Promise<Uint8Array> {
   const { lineItems, purchaseDate, subtotal, discountAmount, total } = data;
 
   const pdfDoc = await PDFDocument.create();
+  pdfDoc.registerFontkit(
+    fontkit as Parameters<PDFDocument["registerFontkit"]>[0],
+  );
   let page = pdfDoc.addPage([595.28, 841.89]); // A4 (points)
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+  const audiowideBytes = readFileSync(
+    path.join(process.cwd(), "public", "fonts", "Audiowide-Regular.ttf"),
+  );
+
+  const audiowideFont = await pdfDoc.embedFont(audiowideBytes);
 
   const { width, height } = page.getSize();
   const marginX = 48;
@@ -38,7 +50,7 @@ async function generateInvoicePdf(data: InvoiceData): Promise<Uint8Array> {
     x: marginX,
     y,
     size: 20,
-    font: boldFont,
+    font: audiowideFont,
     color: rgb(0.25, 0.25, 0.25),
   });
 
