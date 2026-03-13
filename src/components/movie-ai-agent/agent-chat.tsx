@@ -6,7 +6,7 @@ import { Input } from "../ui/input";
 import { ScrollArea } from "../ui/scroll-area";
 import { useChat } from "@ai-sdk/react";
 import { useAtom } from "jotai";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useMemo } from "react";
 import { cartAtom } from "~/lib/atoms";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
@@ -27,7 +27,9 @@ const AgentChat = () => {
 
   const { messages, sendMessage, status, error } = useChat();
 
-  const isLoading = status === "streaming" || status === "submitted";
+  const isLoading = useMemo(() => {
+    return status === "streaming" || status === "submitted";
+  }, [status]);
 
   useEffect(() => {
     if (bottomRef.current) {

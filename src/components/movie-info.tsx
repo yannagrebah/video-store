@@ -2,13 +2,14 @@ import Image from "next/image";
 import { Film } from "lucide-react";
 import { cn } from "~/lib/utils";
 import type { Movie } from "~/lib/types";
+import { memo } from "react";
 
 const posterSizes = {
   default: { className: "h-24 w-16 rounded-md", sizes: "64px" },
   sm: { className: "h-12 w-8 rounded-sm", sizes: "32px" },
 } as const;
 
-const MovieInfo = ({
+const MovieInfo = memo(function MovieInfo({
   title,
   release_date,
   poster_path,
@@ -17,7 +18,7 @@ const MovieInfo = ({
 }: Pick<Movie, "title" | "release_date" | "poster_path"> & {
   size?: keyof typeof posterSizes;
   className?: string;
-}) => {
+}) {
   const poster = posterSizes[size];
   const year = release_date?.split("-")[0];
 
@@ -49,13 +50,11 @@ const MovieInfo = ({
           {title}
         </span>
         {year && (
-          <span className="text-muted-foreground shrink-0 text-xs">
-            {year}
-          </span>
+          <span className="text-muted-foreground shrink-0 text-xs">{year}</span>
         )}
       </div>
     </div>
   );
-};
+});
 
 export default MovieInfo;
