@@ -3,7 +3,7 @@ import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { env } from "~/env";
 import {
-  movieDetaislSchema,
+  movieDetailsSchema,
   movieSchema,
   moviePersonSchema,
   type Movie,
@@ -84,7 +84,7 @@ export const movieRouter = createTRPCRouter({
         append_to_response: "credits",
       });
 
-      return movieDetaislSchema.parse(rawData);
+      return movieDetailsSchema.parse(rawData);
     }),
   getTrendingMovies: publicProcedure.query(async () => {
     const rawData = await fetchTMDB("/trending/movie/week");

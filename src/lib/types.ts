@@ -23,7 +23,7 @@ const moviePersonSchema = z.object({
         return "Unknown";
     }
   }),
-  know_for_department: z.string(),
+  known_for_department: z.string(),
   known_for: z.array(
     z.object({
       title: z.string().optional(),
@@ -33,7 +33,7 @@ const moviePersonSchema = z.object({
   ),
 });
 
-const movieDetaislSchema = movieSchema.extend({
+const movieDetailsSchema = movieSchema.extend({
   overview: z.string().optional(),
   genres: z.array(z.object({ name: z.string() })).optional(),
   credits: z.object({
@@ -54,11 +54,11 @@ type Movie = z.infer<typeof movieSchema>;
 
 type MoviePerson = z.infer<typeof moviePersonSchema>;
 
-type MovieDetails = z.infer<typeof movieDetaislSchema>;
+type MovieDetails = z.infer<typeof movieDetailsSchema>;
 
 interface MovieCart extends Movie {
   quantity: number;
 }
 
 export type { Movie, MovieCart, MoviePerson, MovieDetails };
-export { movieSchema, moviePersonSchema, movieDetaislSchema };
+export { movieSchema, moviePersonSchema, movieDetailsSchema };
