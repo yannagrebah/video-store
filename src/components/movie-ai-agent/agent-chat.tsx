@@ -9,6 +9,7 @@ import { useAtom } from "jotai";
 import { useRef, useEffect, useMemo } from "react";
 import { cartAtom } from "~/lib/atoms";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 
 function getMessageText(message: {
   parts: Array<{ type: string; text?: string }>;
@@ -30,7 +31,7 @@ const AgentChat = () => {
   const isLoading = useMemo(() => {
     return status === "streaming" || status === "submitted";
   }, [status]);
-
+  const [parent] = useAutoAnimate();
   useEffect(() => {
     if (bottomRef.current) {
       bottomRef.current.scrollIntoView({ behavior: "smooth" });
@@ -52,7 +53,7 @@ const AgentChat = () => {
   return (
     <>
       <ScrollArea className="h-full">
-        <div className="flex flex-col gap-3 p-4">
+        <div className="flex flex-col gap-3 p-4" ref={parent}>
           {messages.length === 0 && (
             <p className="text-muted-foreground py-8 text-center text-sm">
               {cartItems.length > 0
