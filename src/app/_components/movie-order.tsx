@@ -2,6 +2,7 @@
 
 import { useAtom } from "jotai";
 import { Card, CardContent } from "~/components/ui/card";
+import { ScrollArea } from "~/components/ui/scroll-area";
 import { Separator } from "~/components/ui/separator";
 import { Skeleton } from "~/components/ui/skeleton";
 import MovieCartList from "~/components/movie-cart-list";
@@ -52,13 +53,13 @@ const MovieOrder = () => {
   return (
     <>
       <MovieSearchInput onSelect={handleSelect} />
-      <article className="max-h-[50lvh] overflow-y-auto px-4">
+      <ScrollArea className="h-[50lvh] px-4">
         <MovieCartList
           movieCartItems={cartItems}
           onQuantityChange={handleQuantityChange}
           onDelete={handleDelete}
         />
-      </article>
+      </ScrollArea>
       <Card>
         <CardContent className="flex flex-col gap-3">
           <div className="flex items-center justify-between">

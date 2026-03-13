@@ -15,7 +15,7 @@ const MovieCartList = ({
   return (
     <ul className="space-y-4 py-6">
       {movieCartItems.length === 0 && (
-        <li className="text-muted-foreground text-center">
+        <li className="text-muted-foreground text-center text-sm">
           Your cart is empty. Add some movies to get started!
         </li>
       )}
