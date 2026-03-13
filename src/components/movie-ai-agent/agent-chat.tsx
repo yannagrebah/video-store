@@ -22,17 +22,17 @@ function getMessageText(message: {
 
 const AgentChat = () => {
   const [cartItems] = useAtom(cartAtom);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
 
   const { messages, sendMessage, status } = useChat();
 
   const isLoading = status === "streaming" || status === "submitted";
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    if (bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages]);
+  }, [messages, status]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -48,7 +48,7 @@ const AgentChat = () => {
   };
   return (
     <>
-      <ScrollArea className="h-full" ref={scrollRef}>
+      <ScrollArea className="h-full">
         <div className="flex flex-col gap-3 p-4">
           {messages.length === 0 && (
             <p className="text-muted-foreground py-8 text-center text-sm">
@@ -58,26 +58,35 @@ const AgentChat = () => {
             </p>
           )}
 
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={cn(
-                "max-w-[85%] rounded-lg px-3 py-2 text-sm whitespace-pre-wrap",
-                message.role === "user"
-                  ? "bg-primary text-primary-foreground ml-auto"
-                  : "bg-muted text-foreground mr-auto",
-              )}
-            >
-              {getMessageText(message)}
-            </div>
-          ))}
+          {messages.map((message) => {
+            const text = getMessageText(message);
+            if (!text && message.role === "assistant") return null;
 
-          {isLoading && messages.at(-1)?.role !== "assistant" && (
-            <div className="bg-muted text-muted-foreground mr-auto flex items-center gap-2 rounded-lg px-3 py-2 text-sm">
-              <Loader2 className="size-3 animate-spin" />
-              Thinking...
-            </div>
-          )}
+            return (
+              <div
+                key={message.id}
+                className={cn(
+                  "max-w-[85%] rounded-lg px-3 py-2 text-sm whitespace-pre-wrap",
+                  message.role === "user"
+                    ? "bg-primary text-primary-foreground ml-auto"
+                    : "bg-muted text-foreground mr-auto",
+                )}
+              >
+                {text}
+              </div>
+            );
+          })}
+
+          {isLoading &&
+            (!messages.at(-1) ||
+              messages.at(-1)?.role !== "assistant" ||
+              !getMessageText(messages.at(-1)!)) && (
+              <div className="bg-muted text-muted-foreground mr-auto flex items-center gap-2 rounded-lg px-3 py-2 text-sm">
+                <Loader2 className="size-3 animate-spin" />
+              </div>
+            )}
+
+          <div ref={bottomRef} />
         </div>
       </ScrollArea>
 
