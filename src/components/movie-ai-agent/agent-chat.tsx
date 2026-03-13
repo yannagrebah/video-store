@@ -68,8 +68,8 @@ const AgentChat = () => {
                 className={cn(
                   "max-w-[85%] rounded-lg px-3 py-2 text-sm whitespace-pre-wrap",
                   message.role === "user"
-                    ? "bg-primary text-primary-foreground ml-auto"
-                    : "bg-muted text-foreground mr-auto",
+                    ? "bg-primary text-primary-foreground ml-auto rounded-tr-none"
+                    : "bg-muted text-foreground mr-auto rounded-tl-none",
                 )}
               >
                 {text}
@@ -81,7 +81,7 @@ const AgentChat = () => {
             (!messages.at(-1) ||
               messages.at(-1)?.role !== "assistant" ||
               !getMessageText(messages.at(-1)!)) && (
-              <div className="bg-muted text-muted-foreground mr-auto flex items-center gap-2 rounded-lg px-3 py-2 text-sm">
+              <div className="bg-muted text-muted-foreground mr-auto flex items-center gap-2 rounded-lg rounded-tl-none px-3 py-2 text-sm">
                 <Loader2 className="size-3 animate-spin" />
               </div>
             )}
