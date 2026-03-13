@@ -1,6 +1,14 @@
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { streamText, convertToModelMessages, type UIMessage } from "ai";
+import {
+  streamText,
+  convertToModelMessages,
+  tool,
+  type UIMessage,
+  stepCountIs,
+} from "ai";
+import { z } from "zod";
 import { env } from "~/env";
+import { appRouter } from "~/server/api/root";
 
 const google = createGoogleGenerativeAI({
   apiKey: env.GEMINI_API_KEY,
@@ -17,16 +25,65 @@ export async function POST(req: Request) {
       ? `\n\nThe user currently has the following movies in their cart: ${cart.join(", ")}.`
       : "\n\nThe user's cart is currently empty.";
 
+  const caller = appRouter.createCaller({ headers: req.headers });
+
   const result = streamText({
     model: google("gemini-3-flash-preview"),
     system:
-      "You are a helpful movie recommendation assistant for a video store. " +
-      "Based on the movies the user has in their cart, you suggest similar movies they might enjoy. " +
-      "Keep your recommendations concise and relevant. " +
-      "For each recommendation, briefly explain why the user might like it based on what's already in their cart." +
+      "You are a sophisticated movie connoisseur and expert recommendation assistant for a video store. " +
+      "Your goal is to offer thoughtful, highly accurate, and engaging movie advice to customers. " +
+      "You do not just recommend movies; you discuss directors, actors, cinematic movements, and hidden gems. " +
+      "Use your available tools to search for movies, look up actors or directors, look for what's trending right now and retrieve detailed movie information from TMDB to ensure your advice is perfectly accurate. " +
+      "Tailor your recommendations based on what the user currently has in their cart. " +
+      "Provide well-reasoned explanations for your suggestions, mentioning specific actors, directors, or thematic links." +
       cartContext +
-      "\n\nReply in plain text, without any formatting or markdown.",
+      "\n\nReply in plain text, without any formatting or markdown." +
+      "Responses should not be more than 458 characters" +
+      "Keep a casual and friendly tone, as if you're chatting with a fellow movie lover, do not use complicated language.",
     messages: await convertToModelMessages(messages),
+    stopWhen: stepCountIs(5), // Allow the agent to call tools and then respond
+    tools: {
+      searchMovies: tool({
+        description:
+          "Search for movies by title to get basic information and TMDB IDs.",
+        inputSchema: z.object({
+          query: z
+            .string()
+            .describe("The search query, usually a movie title."),
+        }),
+        execute: async ({ query }) => {
+          return await caller.movie.searchMovies({ query });
+        },
+      }),
+      searchMoviePerson: tool({
+        description:
+          "Search for cast or crew members (actors, directors, etc.) to get their basic information and TMDB IDs.",
+        inputSchema: z.object({
+          query: z.string().describe("The name of the person."),
+        }),
+        execute: async ({ query }) => {
+          return await caller.movie.searchMoviePerson({ query });
+        },
+      }),
+      getMovieDetails: tool({
+        description:
+          "Get comprehensive details about a specific movie, including cast, crew, release date, and overview. Requires a TMDB movie ID.",
+        inputSchema: z.object({
+          id: z.number().describe("The TMDB ID of the movie."),
+        }),
+        execute: async ({ id }) => {
+          return await caller.movie.getMovieDetails({ id });
+        },
+      }),
+      getTrendingMovies: tool({
+        description:
+          "Get a list of currently trending movies to recommend popular choices.",
+        inputSchema: z.object({}),
+        execute: async () => {
+          return await caller.movie.getTrendingMovies();
+        },
+      }),
+    },
   });
 
   return result.toUIMessageStreamResponse();
