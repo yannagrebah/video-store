@@ -86,6 +86,21 @@ export const movieRouter = createTRPCRouter({
 
       return movieDetaislSchema.parse(rawData);
     }),
+  getTrendingMovies: publicProcedure.query(async () => {
+    const rawData = await fetchTMDB("/trending/movie/week");
+
+    const data = z
+      .object({
+        page: z.number(),
+        results: z.array(movieSchema),
+      })
+      .parse(rawData);
+
+    return data.results.slice(0, 5).map((movie) => ({
+      title: movie.title,
+      release_date: movie.release_date,
+    }));
+  }),
 
   getPrice: publicProcedure
     .input(z.object({ id: z.number() }))
