@@ -8,7 +8,6 @@ const movieSchema = z.object({
 });
 
 const moviePersonSchema = z.object({
-  id: z.number(),
   name: z.string(),
   gender: z.number().transform((val) => {
     switch (val) {
@@ -27,7 +26,6 @@ const moviePersonSchema = z.object({
   know_for_department: z.string(),
   known_for: z.array(
     z.object({
-      id: z.number(),
       title: z.string().optional(),
       media_type: z.string(),
       release_date: z.string().optional(),
@@ -37,7 +35,7 @@ const moviePersonSchema = z.object({
 
 const movieDetaislSchema = movieSchema.extend({
   overview: z.string().optional(),
-  genres: z.array(z.object({ id: z.number(), name: z.string() })).optional(),
+  genres: z.array(z.object({ name: z.string() })).optional(),
   credits: z.object({
     cast: z.array(
       moviePersonSchema.omit({ known_for: true }).extend({
