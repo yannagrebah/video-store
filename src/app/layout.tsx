@@ -4,6 +4,7 @@ import { type Metadata } from "next";
 import { Audiowide, Roboto } from "next/font/google";
 
 import { TRPCReactProvider } from "~/trpc/react";
+import { TooltipProvider } from "~/components/ui/tooltip";
 
 export const metadata: Metadata = {
   title: "Video Store",
@@ -28,7 +29,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`dark ${roboto.variable} ${audiowide.variable}`}>
       <body>
-        <TRPCReactProvider>{children}</TRPCReactProvider>
+        <TooltipProvider>
+          <TRPCReactProvider>{children}</TRPCReactProvider>
+        </TooltipProvider>
       </body>
     </html>
   );
