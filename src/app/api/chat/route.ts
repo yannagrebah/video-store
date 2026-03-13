@@ -23,26 +23,27 @@ const requestSchema = z.object({
 });
 
 export async function POST(req: Request) {
-  const { messages, cart } = requestSchema.parse(await req.json());
+  try {
+    const { messages, cart } = requestSchema.parse(await req.json());
 
-  const cartContext =
-    cart && cart.length > 0
-      ? `\n\nThe user currently has the following movies in their cart: ${cart
-          .slice(0, MAX_SAMPLE_CART_ITEMS)
-          .map((title) => {
-            const safeTitle = String(title);
-            return safeTitle.length > MAX_SAMPLE_CART_TITLE_LENGTH
-              ? safeTitle.slice(0, MAX_SAMPLE_CART_TITLE_LENGTH) + "…"
-              : safeTitle;
-          })
-          .join(", ")}.`
-      : "\n\nThe user's cart is currently empty.";
+    const cartContext =
+      cart && cart.length > 0
+        ? `\n\nThe user currently has the following movies in their cart: ${cart
+            .slice(0, MAX_SAMPLE_CART_ITEMS)
+            .map((title) => {
+              const safeTitle = String(title);
+              return safeTitle.length > MAX_SAMPLE_CART_TITLE_LENGTH
+                ? safeTitle.slice(0, MAX_SAMPLE_CART_TITLE_LENGTH) + "…"
+                : safeTitle;
+            })
+            .join(", ")}.`
+        : "\n\nThe user's cart is currently empty.";
 
-  const caller = appRouter.createCaller({ headers: req.headers });
+    const caller = appRouter.createCaller({ headers: req.headers });
 
-  const result = streamText({
-    model: google("gemini-3.1-flash-lite-preview"),
-    system: `
+    const result = streamText({
+      model: google("gemini-3.1-flash-lite-preview"),
+      system: `
 You are a great movie connoisseur and expert recommendation assistant for a video store
 Your goal is to offer thoughtful, highly accurate, and engaging movie advice to customers
 Use your available tools to search for movies, look up actors or directors, look for what's trending right now and retrieve detailed movie information from TMDB to ensure your advice is perfectly accurate
@@ -58,51 +59,66 @@ Reply in plain text, without any formatting or markdown
 Keep responses small and concise, 458 characters max
 Keep a casual and friendly tone, as if you're chatting with a fellow movie lover, do not use complicated language
 `,
-    messages: await convertToModelMessages(messages),
-    stopWhen: stepCountIs(5), // Allow the agent to call tools and then respond
-    tools: {
-      searchMovies: tool({
-        description:
-          "Search for movies by title to get basic information and TMDB IDs.",
-        inputSchema: z.object({
-          query: z
-            .string()
-            .describe("The search query, usually a movie title."),
+      messages: await convertToModelMessages(messages),
+      stopWhen: stepCountIs(5), // Allow the agent to call tools and then respond
+      tools: {
+        searchMovies: tool({
+          description:
+            "Search for movies by title to get basic information and TMDB IDs.",
+          inputSchema: z.object({
+            query: z
+              .string()
+              .describe("The search query, usually a movie title."),
+          }),
+          execute: async ({ query }) => {
+            return await caller.movie.searchMovies({ query });
+          },
         }),
-        execute: async ({ query }) => {
-          return await caller.movie.searchMovies({ query });
-        },
-      }),
-      searchMoviePerson: tool({
-        description:
-          "Search for cast or crew members (actors, directors, etc.) to get their basic information and TMDB IDs.",
-        inputSchema: z.object({
-          query: z.string().describe("The name of the person."),
+        searchMoviePerson: tool({
+          description:
+            "Search for cast or crew members (actors, directors, etc.) to get their basic information and TMDB IDs.",
+          inputSchema: z.object({
+            query: z.string().describe("The name of the person."),
+          }),
+          execute: async ({ query }) => {
+            return await caller.movie.searchMoviePerson({ query });
+          },
         }),
-        execute: async ({ query }) => {
-          return await caller.movie.searchMoviePerson({ query });
-        },
-      }),
-      getMovieDetails: tool({
-        description:
-          "Get comprehensive details about a specific movie, including cast, crew, release date, and overview. Requires a TMDB movie ID.",
-        inputSchema: z.object({
-          id: z.number().describe("The TMDB ID of the movie."),
+        getMovieDetails: tool({
+          description:
+            "Get comprehensive details about a specific movie, including cast, crew, release date, and overview. Requires a TMDB movie ID.",
+          inputSchema: z.object({
+            id: z.number().describe("The TMDB ID of the movie."),
+          }),
+          execute: async ({ id }) => {
+            return await caller.movie.getMovieDetails({ id });
+          },
         }),
-        execute: async ({ id }) => {
-          return await caller.movie.getMovieDetails({ id });
-        },
-      }),
-      getTrendingMovies: tool({
-        description:
-          "Get a list of currently trending movies to recommend popular choices.",
-        inputSchema: z.object({}),
-        execute: async () => {
-          return await caller.movie.getTrendingMovies();
-        },
-      }),
-    },
-  });
+        getTrendingMovies: tool({
+          description:
+            "Get a list of currently trending movies to recommend popular choices.",
+          inputSchema: z.object({}),
+          execute: async () => {
+            return await caller.movie.getTrendingMovies();
+          },
+        }),
+      },
+      onError: ({ error }) => {
+        throw new Error(
+          `Agent execution error: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      },
+    });
 
-  return result.toUIMessageStreamResponse();
+    return result.toUIMessageStreamResponse();
+  } catch (error) {
+    console.error("[POST /api/chat Error]:", error);
+    return new Response(
+      JSON.stringify({ error: "An unexpected server error occurred." }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+  }
 }

@@ -1,5 +1,5 @@
 "use client";
-import { Forward, Loader2 } from "lucide-react";
+import { Forward, Loader2, AlertCircle } from "lucide-react";
 import { cn } from "~/lib/utils";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -8,6 +8,7 @@ import { useChat } from "@ai-sdk/react";
 import { useAtom } from "jotai";
 import { useRef, useEffect } from "react";
 import { cartAtom } from "~/lib/atoms";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 function getMessageText(message: {
   parts: Array<{ type: string; text?: string }>;
@@ -24,7 +25,7 @@ const AgentChat = () => {
   const [cartItems] = useAtom(cartAtom);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  const { messages, sendMessage, status } = useChat();
+  const { messages, sendMessage, status, error } = useChat();
 
   const isLoading = status === "streaming" || status === "submitted";
 
@@ -85,6 +86,22 @@ const AgentChat = () => {
                 <Loader2 className="size-3 animate-spin" />
               </div>
             )}
+
+          {error && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="bg-destructive/10 text-destructive border-destructive/20 w-fit gap-2 rounded-lg rounded-tl-none border px-3 py-2 text-sm">
+                  <AlertCircle size={16} />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent
+                className="bg-destructive/10 text-destructive border-destructive/20 [&_svg]:hidden!"
+                sideOffset={4}
+              >
+                <p>An error occured. Please try again.</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
 
           <div ref={bottomRef} />
         </div>
