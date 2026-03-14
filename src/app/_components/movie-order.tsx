@@ -7,24 +7,14 @@ import { Separator } from "~/components/ui/separator";
 import { Skeleton } from "~/components/ui/skeleton";
 import MovieCartList from "~/components/movie-cart-list";
 import MovieSearchInput from "~/components/movie-search-input";
-import { useCartTotal } from "~/hooks/use-cart-total";
-import { useCartDiscount } from "~/hooks/use-cart-discount";
 import { cartAtom } from "~/lib/atoms";
 import type { Movie } from "~/lib/types";
 import { formatCurrency } from "~/lib/utils";
+import { useCart } from "~/hooks/use-cart";
 
 const MovieOrder = () => {
   const [cartItems, setCartItems] = useAtom(cartAtom);
-  const { totalPrice: subtotal, isLoading: isTotalLoading } =
-    useCartTotal(cartItems);
-  const {
-    discountRate,
-    discountAmount,
-    isLoading: isDiscountLoading,
-  } = useCartDiscount(cartItems);
-
-  const isLoading = isTotalLoading || isDiscountLoading;
-  const finalTotal = subtotal - discountAmount;
+  const { subTotal, discount, total, isLoading } = useCart();
 
   const handleSelect = (movie: Movie) => {
     setCartItems((prev) => {
@@ -68,22 +58,19 @@ const MovieOrder = () => {
               <Skeleton className="h-5 w-20" />
             ) : (
               <span className="text-foreground text-sm font-medium">
-                {formatCurrency(subtotal)}
+                {formatCurrency(subTotal)}
               </span>
             )}
           </div>
 
-          {discountAmount > 0 && (
+          {discount.amount > 0 && (
             <div className="flex items-center justify-between">
-              <span className="text-discount text-sm">
-                Discount ({(discountRate * 100).toFixed(0)}% on Back to the
-                Future)
-              </span>
+              <span className="text-discount text-sm">{discount.label}</span>
               {isLoading ? (
                 <Skeleton className="h-5 w-20" />
               ) : (
                 <span className="text-discount text-sm font-medium">
-                  -{formatCurrency(discountAmount)}
+                  -{formatCurrency(discount.amount)}
                 </span>
               )}
             </div>
@@ -97,7 +84,7 @@ const MovieOrder = () => {
               <Skeleton className="h-7 w-24" />
             ) : (
               <span className="text-foreground text-xl font-bold">
-                {formatCurrency(finalTotal)}
+                {formatCurrency(total)}
               </span>
             )}
           </div>
