@@ -11,5 +11,5 @@ export const getDb = cache(() => {
 // This is the one to use for static routes (i.e. ISR/SSG)
 export const getDbAsync = cache(async () => {
   const { env } = await getCloudflareContext({ async: true });
-  return drizzle(env.DB, { schema });
+  return drizzle(env.DB, { schema, casing: "snake_case" });
 });
