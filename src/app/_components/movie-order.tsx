@@ -13,42 +13,18 @@ import { formatCurrency } from "~/lib/utils";
 import { useCart } from "~/hooks/use-cart";
 
 const MovieOrder = () => {
-  const [cartItems, setCartItems] = useAtom(cartAtom);
-  const { subTotal, discount, total, isLoading } = useCart();
+  const [cartItems] = useAtom(cartAtom);
+  const { subTotal, discount, total, isLoading, addToCart } = useCart();
 
   const handleSelect = (movie: Movie) => {
-    setCartItems((prev) => {
-      const existing = prev.find((item) => item.id === movie.id);
-      if (existing) {
-        return prev.map((item) =>
-          item.id === movie.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item,
-        );
-      }
-      return [...prev, { ...movie, quantity: 1 }];
-    });
-  };
-
-  const handleQuantityChange = (id: number, quantity: number) => {
-    setCartItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, quantity } : item)),
-    );
-  };
-
-  const handleDelete = (id: number) => {
-    setCartItems((prev) => prev.filter((item) => item.id !== id));
+    addToCart(movie);
   };
 
   return (
     <>
       <MovieSearchInput onSelect={handleSelect} />
       <ScrollArea className="h-[50lvh] px-4">
-        <MovieCartList
-          movieCartItems={cartItems}
-          onQuantityChange={handleQuantityChange}
-          onDelete={handleDelete}
-        />
+        <MovieCartList movieCartItems={cartItems} />
       </ScrollArea>
       <Card>
         <CardContent className="flex flex-col gap-3">

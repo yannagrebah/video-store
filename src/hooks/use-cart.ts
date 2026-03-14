@@ -3,9 +3,10 @@ import { useMemo } from "react";
 import { cartAtom } from "~/lib/atoms";
 import { api } from "~/trpc/react";
 import { calculateCartPricing } from "~/lib/pricing";
+import type { Movie } from "~/lib/types";
 
 export function useCart() {
-  const [cartItems] = useAtom(cartAtom);
+  const [cartItems, setCartItems] = useAtom(cartAtom);
 
   const priceQueries = api.useQueries((t) =>
     cartItems.map(({ id: movieId }) => t.pricing.getByMovieId({ movieId })),
@@ -38,6 +39,29 @@ export function useCart() {
   }, [cartItems, pricesMap, bestDiscount]);
   const isLoading = isPriceLoading || isApplicableLoading;
 
+  const addToCart = (movie: Movie) => {
+    setCartItems((prev) => {
+      const existing = prev.find((item) => item.id === movie.id);
+      if (existing) {
+        return prev.map((item) =>
+          item.id === movie.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item,
+        );
+      }
+      return [...prev, { ...movie, quantity: 1 }];
+    });
+  };
+
+  const updateQuantity = (id: number, quantity: number) => {
+    setCartItems((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, quantity } : item)),
+    );
+  };
+
+  const deleteFromCart = (id: number) => {
+    setCartItems((prev) => prev.filter((item) => item.id !== id));
+  };
   return {
     subTotal: subtotal,
     discount: {
@@ -47,5 +71,8 @@ export function useCart() {
     },
     total,
     isLoading,
+    addToCart,
+    updateQuantity,
+    deleteFromCart,
   };
 }
