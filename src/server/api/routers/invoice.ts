@@ -2,11 +2,12 @@ import { z } from "zod";
 import { eq } from "drizzle-orm";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
-import { calculateCartPricing, getUnitPrice } from "~/lib/pricing";
+import { calculateCartPricing } from "~/lib/pricing";
 import { generateInvoicePdf } from "~/lib/generate-invoice-pdf";
 import { invoices } from "~/lib/db/schema/d1";
 import { fetchTMDB } from "./movie";
 import { movieDetailsSchema } from "~/lib/types";
+import { getBestDiscount } from "./discount";
 
 const createInvoiceInputSchema = z.object({
   items: z
@@ -52,29 +53,47 @@ export const invoiceRouter = createTRPCRouter({
   create: publicProcedure
     .input(createInvoiceInputSchema)
     .mutation(async ({ ctx: { db }, input }) => {
-      const lineItems = input.items.map((item) => {
-        const unitPrice = getUnitPrice(item.id);
-
-        return {
-          ...item,
-          unitPrice,
-        };
+      // First fetch applicable prices map
+      const movieIds = Array.from(new Set(input.items.map((i) => i.id)));
+      const moviePrices = await db.query.prices.findMany({
+        where: (prices, { or }) =>
+          or(
+            ...movieIds.map((id) => eq(prices.movieId, id)),
+            eq(prices.movieId, 0), // default price
+          ),
+      });
+      const defaultPriceObj = moviePrices.find((p) => p.movieId === 0);
+      const pricesMap = new Map<number, number>();
+      movieIds.forEach((id) => {
+        const priceObj = moviePrices.find((p) => p.movieId === id);
+        pricesMap.set(
+          id,
+          priceObj ? priceObj.price : (defaultPriceObj?.price ?? 0),
+        );
       });
 
+      // Then fetch applicable discounts
+      const bestDiscount = getBestDiscount(
+        movieIds,
+        await db.query.discounts.findMany(),
+      );
+
       const { subtotal, discountAmount, total } = calculateCartPricing(
-        lineItems.map((item) => ({
+        input.items.map((item) => ({
           id: item.id,
           quantity: item.quantity,
         })),
+        pricesMap,
+        bestDiscount,
       );
 
       const result = await db
         .insert(invoices)
         .values({
-          items: lineItems.map((item) => ({
+          items: input.items.map((item) => ({
             movieId: item.id,
             quantity: item.quantity,
-            unitPrice: item.unitPrice,
+            unitPrice: pricesMap.get(item.id) ?? defaultPriceObj?.price ?? 0,
           })),
           subtotal,
           discountAmount,
@@ -99,7 +118,6 @@ export const invoiceRouter = createTRPCRouter({
           const movieDetails = movieDetailsSchema.safeParse(
             await fetchTMDB(`/movie/${item.movieId}`),
           );
-
           const title = movieDetails.data?.title ?? `Movie ID ${item.movieId}`;
           return {
             title,
@@ -113,11 +131,27 @@ export const invoiceRouter = createTRPCRouter({
       const purchaseDate =
         invoice.createdAt?.toISOString() ?? new Date().toISOString();
 
+      const movieIds = Array.from(new Set(invoice.items.map((i) => i.movieId)));
+      const allDiscounts = await db.query.discounts.findMany();
+      const applicableDiscounts = allDiscounts.filter((discount) =>
+        discount.movieBundles.some((bundle) =>
+          [bundle].flat(2).every((id) => movieIds.includes(id)),
+        ),
+      );
+
+      let bestDiscount = null;
+      if (applicableDiscounts.length > 0) {
+        bestDiscount = applicableDiscounts.reduce((best, current) =>
+          current.discountRate > best.discountRate ? current : best,
+        );
+      }
+      const exactDiscountRate = bestDiscount?.discountRate ?? 0;
+
       const pdfBytes = await generateInvoicePdf({
         lineItems,
         purchaseDate,
         subtotal: invoice.subtotal,
-        discountRate: 0,
+        discountRate: exactDiscountRate,
         discountAmount: invoice.discountAmount,
         total: invoice.total,
       });
@@ -134,7 +168,7 @@ export const invoiceRouter = createTRPCRouter({
         pdfBase64,
         purchaseDate,
         subtotal: invoice.subtotal,
-        discountRate: 0,
+        discountRate: exactDiscountRate,
         discountAmount: invoice.discountAmount,
         total: invoice.total,
       };

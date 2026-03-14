@@ -10,7 +10,6 @@ import {
   type MovieDetails,
   type MoviePerson,
 } from "~/lib/types";
-import { getDiscountSummary, getUnitPrice } from "~/lib/pricing";
 
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 
@@ -102,27 +101,4 @@ export const movieRouter = createTRPCRouter({
       release_date: movie.release_date,
     }));
   }),
-
-  getPrice: publicProcedure
-    .input(z.object({ id: z.number() }))
-    .query(({ input }): { unitPrice: number } => {
-      return { unitPrice: getUnitPrice(input.id) };
-    }),
-
-  getDiscount: publicProcedure
-    .input(
-      z.object({
-        items: z.array(
-          z.object({
-            id: z.number(),
-            quantity: z.number().min(1),
-          }),
-        ),
-      }),
-    )
-    .query(({ input }): { discountRate: number; discountAmount: number } => {
-      const { discountRate, discountAmount } = getDiscountSummary(input.items);
-
-      return { discountRate, discountAmount };
-    }),
 });

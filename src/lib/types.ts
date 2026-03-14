@@ -36,18 +36,20 @@ const moviePersonSchema = z.object({
 const movieDetailsSchema = movieSchema.extend({
   overview: z.string().optional(),
   genres: z.array(z.object({ name: z.string() })).optional(),
-  credits: z.object({
-    cast: z.array(
-      moviePersonSchema.omit({ known_for: true }).extend({
-        character: z.string().optional(),
-      }),
-    ),
-    crew: z.array(
-      moviePersonSchema.omit({ known_for: true }).extend({
-        job: z.string().optional(),
-      }),
-    ),
-  }),
+  credits: z
+    .object({
+      cast: z.array(
+        moviePersonSchema.omit({ known_for: true }).extend({
+          character: z.string().optional(),
+        }),
+      ),
+      crew: z.array(
+        moviePersonSchema.omit({ known_for: true }).extend({
+          job: z.string().optional(),
+        }),
+      ),
+    })
+    .optional(),
 });
 
 type Movie = z.infer<typeof movieSchema>;

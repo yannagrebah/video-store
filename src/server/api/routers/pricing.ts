@@ -19,11 +19,16 @@ export const pricingRouter = createTRPCRouter({
     .input(z.object({ movieId: z.number() }))
     .query(async ({ ctx: { db }, input }) => {
       try {
-        const result = await db.query.prices.findFirst({
-          where: eq(prices.movieId, input.movieId),
-        });
+        const [result, defaultPrice] = await Promise.all([
+          db.query.prices.findFirst({
+            where: eq(prices.movieId, input.movieId),
+          }),
+          db.query.prices.findFirst({
+            where: eq(prices.movieId, 0),
+          }),
+        ]);
 
-        return result ?? null;
+        return result ?? defaultPrice ?? null;
       } catch (error) {
         console.error(
           `[pricing.getByMovieId] Error fetching price for movie ${input.movieId}:`,

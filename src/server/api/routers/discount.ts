@@ -2,8 +2,30 @@ import { z } from "zod";
 import { eq } from "drizzle-orm";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import type schema from "~/lib/db/schema/d1";
 import { discounts } from "~/lib/db/schema/d1";
 
+export const getBestDiscount = (
+  movieIds: number[],
+  discounts: (typeof schema.discounts.$inferSelect)[],
+) => {
+  // Filter discounts that apply to the given movie IDs
+  const applicableDiscounts = discounts.filter((discount) =>
+    discount.movieBundles.some((bundle) =>
+      [bundle].flat(2).every((movieId) => movieIds.includes(movieId)),
+    ),
+  );
+  if (applicableDiscounts.length === 0) {
+    return null;
+  }
+
+  // Return only the best discount
+  const bestDiscount = applicableDiscounts.reduce((best, current) =>
+    current.discountRate > best.discountRate ? current : best,
+  );
+
+  return bestDiscount;
+};
 export const discountRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx: { db } }) => {
     try {
@@ -33,6 +55,20 @@ export const discountRouter = createTRPCRouter({
       }
     }),
 
+  getApplicable: publicProcedure
+    .input(z.object({ movieIds: z.array(z.number()) }))
+    .query(async ({ ctx: { db }, input }) => {
+      try {
+        const results = await db.query.discounts.findMany();
+        return getBestDiscount(input.movieIds, results);
+      } catch (error) {
+        console.error(
+          `[discount.getApplicable] Error fetching applicable discounts for movies ${input.movieIds.join(", ")}:`,
+          error,
+        );
+        return null;
+      }
+    }),
   create: publicProcedure
     .input(
       z.object({
