@@ -4,8 +4,14 @@ import Link from "next/link";
 import { Button } from "~/components/ui/button";
 import MovieAIAgent from "~/components/movie-ai-agent";
 import { Bot } from "lucide-react";
+import PurchaseSuccess from "./_components/purchase-success";
 
-export default async function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ purchaseSuccess?: number }>;
+}) {
+  const invoiceId = (await searchParams).purchaseSuccess;
   return (
     <HydrateClient>
       <main className="bg-background min-h-screen">
@@ -26,7 +32,7 @@ export default async function Home() {
           </MovieAIAgent>
         </nav>
         <section className="space-y-4 px-4 py-6">
-          <Cart />
+          {invoiceId ? <PurchaseSuccess invoiceId={invoiceId} /> : <Cart />}
         </section>
       </main>
     </HydrateClient>
