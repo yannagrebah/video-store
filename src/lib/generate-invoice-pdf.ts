@@ -1,5 +1,3 @@
-import { readFileSync } from "fs";
-import path from "path";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import fontkit from "@pdf-lib/fontkit";
 import { formatCurrency } from "~/lib/utils";
@@ -31,9 +29,10 @@ async function generateInvoicePdf(data: InvoiceData): Promise<Uint8Array> {
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
-  const audiowideBytes = readFileSync(
-    path.join(process.cwd(), "public", "fonts", "Audiowide-Regular.ttf"),
+  const fontRes = await fetch(
+    "https://raw.githubusercontent.com/google/fonts/main/ofl/audiowide/Audiowide-Regular.ttf",
   );
+  const audiowideBytes = await fontRes.arrayBuffer();
 
   const audiowideFont = await pdfDoc.embedFont(audiowideBytes);
 
