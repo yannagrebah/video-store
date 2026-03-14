@@ -26,15 +26,28 @@ async function generateInvoicePdf(data: InvoiceData): Promise<Uint8Array> {
     fontkit as Parameters<PDFDocument["registerFontkit"]>[0],
   );
   let page = pdfDoc.addPage([595.28, 841.89]); // A4 (points)
-  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-  const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-
-  const fontRes = await fetch(
-    "https://raw.githubusercontent.com/google/fonts/main/ofl/audiowide/Audiowide-Regular.ttf",
-  );
-  const audiowideBytes = await fontRes.arrayBuffer();
-
-  const audiowideFont = await pdfDoc.embedFont(audiowideBytes);
+  const [font, boldFont] = await Promise.all([
+    pdfDoc.embedFont(StandardFonts.Helvetica),
+    pdfDoc.embedFont(StandardFonts.HelveticaBold),
+  ]);
+  let audiowideFont = font; // fallback to standard font if custom font fails to load
+  try {
+    const fontRes = await fetch(
+      "https://raw.githubusercontent.com/google/fonts/main/ofl/audiowide/Audiowide-Regular.ttf",
+    );
+    if (!fontRes.ok) {
+      throw new Error(
+        `Failed to fetch font: ${fontRes.status} ${fontRes.statusText}`,
+      );
+    }
+    const fontBytes = await fontRes.arrayBuffer();
+    audiowideFont = await pdfDoc.embedFont(fontBytes);
+  } catch (e) {
+    console.warn(
+      "Failed to load custom font, falling back to standard font",
+      e,
+    );
+  }
 
   const { width, height } = page.getSize();
   const marginX = 48;
