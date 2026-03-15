@@ -8,7 +8,7 @@ import { Skeleton } from "~/components/ui/skeleton";
 import { formatCurrency } from "~/lib/utils";
 import { api } from "~/trpc/react";
 
-const PurchaseSuccess = ({ invoiceId }: { invoiceId: number }) => {
+const PurchaseSuccess = ({ invoiceId }: { invoiceId: string }) => {
   const { data, isLoading } = api.invoice.getById.useQuery(
     { id: Number(invoiceId) },
     { enabled: !!invoiceId },

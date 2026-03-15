@@ -9,7 +9,7 @@ import PurchaseSuccess from "./_components/purchase-success";
 export default async function Home({
   searchParams,
 }: {
-  searchParams: Promise<{ purchaseSuccess?: number }>;
+  searchParams: Promise<{ purchaseSuccess?: string }>;
 }) {
   const invoiceId = (await searchParams).purchaseSuccess;
   return (
