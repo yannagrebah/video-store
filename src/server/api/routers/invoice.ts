@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { eq } from "drizzle-orm";
+import { TRPCError } from "@trpc/server";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { calculateCartPricing } from "~/lib/pricing";
@@ -112,7 +113,12 @@ export const invoiceRouter = createTRPCRouter({
       });
       const invoice = result ?? null;
 
-      if (!invoice) throw new Error("Invoice not found");
+      if (!invoice) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Invoice not found",
+        });
+      }
       const lineItems = await Promise.all(
         invoice.items.map(async (item) => {
           const movieDetails = movieDetailsSchema.safeParse(
