@@ -41,7 +41,7 @@ export const pricingRouter = createTRPCRouter({
   upsert: publicProcedure
     .input(
       z.object({
-        movieId: z.number().int().positive(),
+        movieId: z.number().int().nonnegative(),
         price: z.number().min(0),
       }),
     )
