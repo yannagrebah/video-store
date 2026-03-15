@@ -54,7 +54,7 @@ const MovieSearchInput = ({
           <Input
             ref={inputRef}
             type="text"
-            placeholder="Search for a movie to add to the cart..."
+            placeholder="Search for a movie..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onFocus={() => {
