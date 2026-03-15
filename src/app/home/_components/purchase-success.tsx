@@ -5,7 +5,7 @@ import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
 import { Skeleton } from "~/components/ui/skeleton";
-import { formatCurrency } from "~/lib/utils";
+import { formatCurrency, downloadPdf } from "~/lib/utils";
 import { api } from "~/trpc/react";
 
 const PurchaseSuccess = ({ invoiceId }: { invoiceId: string }) => {
@@ -17,22 +17,7 @@ const PurchaseSuccess = ({ invoiceId }: { invoiceId: string }) => {
   const { mutate: generatePdf, isPending } =
     api.invoice.generatePdf.useMutation({
       onSuccess: ({ pdfBase64, fileName }) => {
-        const binary = window.atob(pdfBase64);
-        const bytes = new Uint8Array(binary.length);
-
-        for (let i = 0; i < binary.length; i++) {
-          bytes[i] = binary.charCodeAt(i);
-        }
-
-        const blob = new Blob([bytes], { type: "application/pdf" });
-        const url = URL.createObjectURL(blob);
-
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = fileName;
-        a.click();
-
-        URL.revokeObjectURL(url);
+        downloadPdf(pdfBase64, fileName);
       },
     });
 
