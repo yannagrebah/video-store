@@ -5,6 +5,7 @@ import { TopMoviesChart } from "./_components/top-movies-chart";
 import { InvoicesTable } from "./_components/invoices-table";
 import { PricesTable } from "./_components/prices-table";
 import { DiscountsTable } from "./_components/discounts-table";
+import { Button } from "~/components/ui/button";
 
 export default async function Admin() {
   const [invoices, prices, discounts] = await Promise.all([
@@ -75,12 +76,13 @@ export default async function Admin() {
             VideoStore
           </h1>
         </Link>
-        <Link
-          href="/admin"
-          className="text-muted-foreground justify-self-end text-sm font-medium"
+        <Button
+          variant="ghost"
+          className="hover:bg-muted/50 justify-self-end"
+          asChild
         >
-          Admin Dashboard
-        </Link>
+          <Link href="/admin">Admin Dashboard</Link>
+        </Button>
       </nav>
 
       <section className="mx-auto max-w-7xl space-y-6 p-4 md:p-8">
