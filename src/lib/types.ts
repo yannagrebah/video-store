@@ -52,6 +52,30 @@ const movieDetailsSchema = movieSchema.extend({
     .optional(),
 });
 
+const invoiceSchema = z.object({
+  items: z
+    .array(
+      z.object({
+        id: z.number(),
+        title: z.string().min(1),
+        quantity: z.number().int().min(1),
+      }),
+    )
+    .min(1),
+});
+
+const discountSchema = z.object({
+  id: z.number(),
+  label: z.string().min(1),
+  discountRate: z.number().min(0).max(1),
+  movieBundles: z.array(z.array(z.number())),
+});
+
+const moviePriceSchema = z.object({
+  movieId: z.number().int().nonnegative(),
+  price: z.number().min(0),
+});
+
 type Movie = z.infer<typeof movieSchema>;
 
 type MoviePerson = z.infer<typeof moviePersonSchema>;
@@ -63,4 +87,11 @@ interface MovieCart extends Movie {
 }
 
 export type { Movie, MovieCart, MoviePerson, MovieDetails };
-export { movieSchema, moviePersonSchema, movieDetailsSchema };
+export {
+  movieSchema,
+  moviePersonSchema,
+  movieDetailsSchema,
+  invoiceSchema,
+  discountSchema,
+  moviePriceSchema,
+};

@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { prices } from "~/lib/db/schema/d1";
+import { moviePriceSchema } from "~/lib/types";
 
 export const pricingRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx: { db } }) => {
@@ -39,12 +40,7 @@ export const pricingRouter = createTRPCRouter({
     }),
 
   upsert: publicProcedure
-    .input(
-      z.object({
-        movieId: z.number().int().nonnegative(),
-        price: z.number().min(0),
-      }),
-    )
+    .input(moviePriceSchema)
     .mutation(async ({ ctx: { db }, input }) => {
       const result = await db
         .insert(prices)
