@@ -1,4 +1,5 @@
 import z from "zod";
+import type schema from "./db/schema/d1";
 
 const movieSchema = z.object({
   id: z.number(),
@@ -82,11 +83,22 @@ type MoviePerson = z.infer<typeof moviePersonSchema>;
 
 type MovieDetails = z.infer<typeof movieDetailsSchema>;
 
+type MoviePrice = typeof schema.prices.$inferSelect;
+
+type Discount = typeof schema.discounts.$inferSelect;
+
 interface MovieCart extends Movie {
   quantity: number;
 }
 
-export type { Movie, MovieCart, MoviePerson, MovieDetails };
+export type {
+  Movie,
+  MovieCart,
+  MoviePerson,
+  MovieDetails,
+  MoviePrice,
+  Discount,
+};
 export {
   movieSchema,
   moviePersonSchema,
