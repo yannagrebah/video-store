@@ -79,14 +79,15 @@ export const invoiceRouter = createTRPCRouter({
         await db.query.discounts.findMany(),
       );
 
-      const { subtotal, discountAmount, total } = calculateCartPricing(
-        input.items.map((item) => ({
-          id: item.id,
-          quantity: item.quantity,
-        })),
-        pricesMap,
-        bestDiscount,
-      );
+      const { subtotal, discountAmount, total, discountRate } =
+        calculateCartPricing(
+          input.items.map((item) => ({
+            id: item.id,
+            quantity: item.quantity,
+          })),
+          pricesMap,
+          bestDiscount,
+        );
 
       const result = await db
         .insert(invoices)
@@ -98,6 +99,7 @@ export const invoiceRouter = createTRPCRouter({
           })),
           subtotal,
           discountAmount,
+          discountRate,
           total,
         })
         .returning();
@@ -137,27 +139,11 @@ export const invoiceRouter = createTRPCRouter({
       const purchaseDate =
         invoice.createdAt?.toISOString() ?? new Date().toISOString();
 
-      const movieIds = Array.from(new Set(invoice.items.map((i) => i.movieId)));
-      const allDiscounts = await db.query.discounts.findMany();
-      const applicableDiscounts = allDiscounts.filter((discount) =>
-        discount.movieBundles.some((bundle) =>
-          [bundle].flat(2).every((id) => movieIds.includes(id)),
-        ),
-      );
-
-      let bestDiscount = null;
-      if (applicableDiscounts.length > 0) {
-        bestDiscount = applicableDiscounts.reduce((best, current) =>
-          current.discountRate > best.discountRate ? current : best,
-        );
-      }
-      const exactDiscountRate = bestDiscount?.discountRate ?? 0;
-
       const pdfBytes = await generateInvoicePdf({
         lineItems,
         purchaseDate,
         subtotal: invoice.subtotal,
-        discountRate: exactDiscountRate,
+        discountRate: invoice.discountRate,
         discountAmount: invoice.discountAmount,
         total: invoice.total,
       });
@@ -172,11 +158,6 @@ export const invoiceRouter = createTRPCRouter({
         fileName: `invoice-${purchaseDate.slice(0, 10)}.pdf`,
         mimeType: "application/pdf" as const,
         pdfBase64,
-        purchaseDate,
-        subtotal: invoice.subtotal,
-        discountRate: exactDiscountRate,
-        discountAmount: invoice.discountAmount,
-        total: invoice.total,
       };
     }),
 });

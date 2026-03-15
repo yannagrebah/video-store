@@ -21,6 +21,7 @@ export const invoices = sqliteTable("invoices", {
     .notNull(),
   subtotal: real("subtotal").notNull(),
   discountAmount: real("discount_amount").default(0).notNull(),
+  discountRate: real("discount_rate").default(0).notNull(),
   total: real("total").notNull(),
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(
     () => new Date(),
