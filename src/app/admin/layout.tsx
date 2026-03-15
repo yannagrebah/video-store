@@ -7,6 +7,8 @@ import { TRPCReactProvider } from "~/trpc/react";
 import { TooltipProvider } from "~/components/ui/tooltip";
 import { Button } from "~/components/ui/button";
 import Link from "next/link";
+import { SidebarProvider, SidebarTrigger } from "~/components/ui/sidebar";
+import { AdminSidebar } from "./_components/admin-sidebar";
 
 export const metadata: Metadata = {
   title: "Video Store",
@@ -46,7 +48,11 @@ export default function RootLayout({
                   </Button>
                 </div>
               </nav>
-              {children}
+              <SidebarProvider defaultOpen={false}>
+                <AdminSidebar />
+                <SidebarTrigger />
+                {children}
+              </SidebarProvider>
             </main>
           </TRPCReactProvider>
         </TooltipProvider>
