@@ -50,7 +50,7 @@ export default function RootLayout({
               </nav>
               <SidebarProvider defaultOpen={false}>
                 <AdminSidebar />
-                <SidebarTrigger />
+                <SidebarTrigger className="hidden md:block" />
                 {children}
               </SidebarProvider>
             </main>
