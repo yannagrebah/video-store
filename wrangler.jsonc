@@ -27,4 +27,12 @@
       "invocation_logs": true,
     },
   },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "video-store",
+      "database_id": "8ddcebe5-fc4d-45e7-9b6e-92720f827edc",
+      "migrations_dir": "drizzle",
+    },
+  ],
 }

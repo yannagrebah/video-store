@@ -1,98 +1,44 @@
 "use client";
 
 import { CircleCheck, Download } from "lucide-react";
-import { useAtom } from "jotai";
-import { useRef } from "react";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
-import { cartAtom } from "~/lib/atoms";
-import { useCartDiscount } from "~/hooks/use-cart-discount";
-import { useCartTotal } from "~/hooks/use-cart-total";
 import { Skeleton } from "~/components/ui/skeleton";
 import { formatCurrency } from "~/lib/utils";
 import { api } from "~/trpc/react";
 
-type InvoiceSnapshot = {
-  subtotal: number;
-  discountRate: number;
-  discountAmount: number;
-  total: number;
-};
+const PurchaseSuccess = ({ invoiceId }: { invoiceId: string }) => {
+  const { data, isLoading } = api.invoice.getById.useQuery(
+    { id: Number(invoiceId) },
+    { enabled: !!invoiceId },
+  );
 
-const PurchaseSuccess = () => {
-  const [cartItems, setCartItems] = useAtom(cartAtom);
-  const snapshotRef = useRef<InvoiceSnapshot | null>(null);
+  const { mutate: generatePdf, isPending } =
+    api.invoice.generatePdf.useMutation({
+      onSuccess: ({ pdfBase64, fileName }) => {
+        const binary = window.atob(pdfBase64);
+        const bytes = new Uint8Array(binary.length);
 
-  const { totalPrice: liveSubtotal, isLoading: isTotalLoading } =
-    useCartTotal(cartItems);
-  const {
-    discountRate: liveDiscountRate,
-    discountAmount: liveDiscountAmount,
-    isLoading: isDiscountLoading,
-  } = useCartDiscount(cartItems);
-  const isLoading = isTotalLoading || isDiscountLoading;
-  const liveTotal = liveSubtotal - liveDiscountAmount;
+        for (let i = 0; i < binary.length; i++) {
+          bytes[i] = binary.charCodeAt(i);
+        }
 
-  // Keep the snapshot up-to-date with live values while the cart still has items
-  if (cartItems.length > 0 && !isLoading) {
-    snapshotRef.current = {
-      subtotal: liveSubtotal,
-      discountRate: liveDiscountRate,
-      discountAmount: liveDiscountAmount,
-      total: liveTotal,
-    };
-  }
+        const blob = new Blob([bytes], { type: "application/pdf" });
+        const url = URL.createObjectURL(blob);
 
-  const snapshot = snapshotRef.current;
-  const hasSnapshot = snapshot !== null;
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = fileName;
+        a.click();
 
-  // Use snapshot values if cart has been cleared, otherwise use live values
-  const subtotal =
-    cartItems.length > 0 ? liveSubtotal : (snapshot?.subtotal ?? 0);
-  const discountRate =
-    cartItems.length > 0 ? liveDiscountRate : (snapshot?.discountRate ?? 0);
-  const discountAmount =
-    cartItems.length > 0 ? liveDiscountAmount : (snapshot?.discountAmount ?? 0);
-  const total = cartItems.length > 0 ? liveTotal : (snapshot?.total ?? 0);
-
-  // Show loading skeletons only when cart is active and hooks are loading
-  const showLoading = isLoading && cartItems.length > 0;
-  // Show preview when we have live or snapshotted data
-  const showPreview = showLoading || hasSnapshot || cartItems.length > 0;
-
-  const createInvoice = api.invoice.create.useMutation({
-    onSuccess: ({ pdfBase64, fileName }) => {
-      const binary = window.atob(pdfBase64);
-      const bytes = new Uint8Array(binary.length);
-
-      for (let i = 0; i < binary.length; i++) {
-        bytes[i] = binary.charCodeAt(i);
-      }
-
-      const blob = new Blob([bytes], { type: "application/pdf" });
-      const url = URL.createObjectURL(blob);
-
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = fileName;
-      a.click();
-
-      URL.revokeObjectURL(url);
-      setCartItems([]);
-    },
-  });
+        URL.revokeObjectURL(url);
+      },
+    });
 
   const handleDownloadInvoice = () => {
-    if (cartItems.length === 0) return;
-
-    createInvoice.mutate({
-      items: cartItems.map((item) => ({
-        id: item.id,
-        title: item.title,
-        quantity: item.quantity,
-      })),
-    });
+    if (!data) return;
+    generatePdf({ id: data.id });
   };
 
   return (
@@ -109,65 +55,58 @@ const PurchaseSuccess = () => {
           </p>
         </div>
 
-        {showPreview && (
-          <div className="w-full max-w-md rounded-lg border p-4 text-left">
-            <h3 className="text-foreground text-sm font-semibold">
-              Invoice preview
-            </h3>
-            <div className="mt-3 space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Subtotal</span>
-                {showLoading ? (
-                  <Skeleton className="h-5 w-20" />
-                ) : (
-                  <span className="text-foreground font-medium">
-                    {formatCurrency(subtotal)}
-                  </span>
-                )}
-              </div>
-
-              {discountAmount > 0 && (
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-discount">
-                    Discount ({(discountRate * 100).toFixed(0)}% on Back to the
-                    Future)
-                  </span>
-                  {showLoading ? (
-                    <Skeleton className="h-5 w-20" />
-                  ) : (
-                    <span className="text-discount font-medium">
-                      -{formatCurrency(discountAmount)}
-                    </span>
-                  )}
-                </div>
+        <div className="w-full max-w-md rounded-lg border p-4 text-left">
+          <h3 className="text-foreground text-sm font-semibold">
+            Invoice preview
+          </h3>
+          <div className="mt-3 space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Subtotal</span>
+              {isLoading ? (
+                <Skeleton className="h-5 w-20" />
+              ) : (
+                <span className="text-foreground font-medium">
+                  {formatCurrency(data?.subtotal ?? 0)}
+                </span>
               )}
+            </div>
 
-              <Separator />
-
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-foreground font-semibold">Total</span>
-                {showLoading ? (
-                  <Skeleton className="h-7 w-24" />
-                ) : (
-                  <span className="text-foreground text-base font-bold">
-                    {formatCurrency(total)}
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-discount">Discount Amount</span>
+              {isLoading ? (
+                <Skeleton className="h-5 w-20" />
+              ) : (
+                data?.discountAmount && (
+                  <span className="text-discount font-medium">
+                    -{formatCurrency(data.discountAmount)}
                   </span>
-                )}
-              </div>
+                )
+              )}
+            </div>
+
+            <Separator />
+
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-foreground font-semibold">Total</span>
+              {isLoading ? (
+                <Skeleton className="h-7 w-24" />
+              ) : (
+                <span className="text-foreground text-base font-bold">
+                  {formatCurrency(data?.total ?? 0)}
+                </span>
+              )}
             </div>
           </div>
-        )}
+        </div>
 
         <Button
           onClick={handleDownloadInvoice}
-          disabled={createInvoice.isPending || cartItems.length === 0}
+          disabled={isLoading || isPending}
           className="mt-2 h-12 text-2xl font-bold md:w-1/3"
           size={"lg"}
         >
           <Download className="mr-2" size={24} />
-          {createInvoice.isPending
-            ? "Generating invoice..."
-            : "Download invoice"}
+          {isPending ? "Generating invoice..." : "Download invoice"}
         </Button>
       </CardContent>
     </Card>

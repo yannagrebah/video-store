@@ -9,6 +9,7 @@ import {
 import { z } from "zod";
 import { env } from "~/env";
 import { appRouter } from "~/server/api/root";
+import { getDbAsync } from "~/lib/db";
 
 const MAX_SAMPLE_CART_ITEMS = 20;
 const MAX_SAMPLE_CART_TITLE_LENGTH = 100;
@@ -38,8 +39,10 @@ export async function POST(req: Request) {
             })
             .join(", ")}.`
         : "\n\nThe user's cart is currently empty.";
-
-    const caller = appRouter.createCaller({ headers: req.headers });
+    const caller = appRouter.createCaller({
+      headers: req.headers,
+      db: await getDbAsync(),
+    });
 
     const result = streamText({
       model: google("gemini-3.1-flash-lite-preview"),

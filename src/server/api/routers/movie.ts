@@ -10,11 +10,10 @@ import {
   type MovieDetails,
   type MoviePerson,
 } from "~/lib/types";
-import { getDiscountSummary, getUnitPrice } from "~/lib/pricing";
 
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 
-async function fetchTMDB(
+export async function fetchTMDB(
   endpoint: string,
   params?: Record<string, string | number>,
 ) {
@@ -38,7 +37,7 @@ async function fetchTMDB(
     );
   }
 
-  return (await response.json()) as unknown;
+  return await response.json();
 }
 
 export const movieRouter = createTRPCRouter({
@@ -78,11 +77,12 @@ export const movieRouter = createTRPCRouter({
     }),
 
   getMovieDetails: publicProcedure
-    .input(z.object({ id: z.number() }))
+    .input(z.object({ id: z.number(), credits: z.boolean().default(true) }))
     .query(async ({ input }): Promise<MovieDetails> => {
-      const rawData = await fetchTMDB(`/movie/${input.id}`, {
-        append_to_response: "credits",
-      });
+      const rawData = await fetchTMDB(
+        `/movie/${input.id}`,
+        input.credits ? { append_to_response: "credits" } : undefined,
+      );
 
       return movieDetailsSchema.parse(rawData);
     }),
@@ -101,27 +101,4 @@ export const movieRouter = createTRPCRouter({
       release_date: movie.release_date,
     }));
   }),
-
-  getPrice: publicProcedure
-    .input(z.object({ id: z.number() }))
-    .query(({ input }): { unitPrice: number } => {
-      return { unitPrice: getUnitPrice(input.id) };
-    }),
-
-  getDiscount: publicProcedure
-    .input(
-      z.object({
-        items: z.array(
-          z.object({
-            id: z.number(),
-            quantity: z.number().min(1),
-          }),
-        ),
-      }),
-    )
-    .query(({ input }): { discountRate: number; discountAmount: number } => {
-      const { discountRate, discountAmount } = getDiscountSummary(input.items);
-
-      return { discountRate, discountAmount };
-    }),
 });

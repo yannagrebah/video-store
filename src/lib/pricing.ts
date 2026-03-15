@@ -1,8 +1,14 @@
-const BTTF_TRILOGY_IDS = new Set([105, 165, 196]);
+import type schema from "./db/schema/d1";
 
 type PricedCartItem = {
   id: number;
   quantity: number;
+  price?: number;
+};
+
+type DiscountDef = {
+  discountRate: number;
+  movieBundles: unknown[];
 };
 
 type DiscountSummary = {
@@ -15,64 +21,60 @@ type CartPricingSummary = DiscountSummary & {
   total: number;
 };
 
-function getUnitPrice(id: number): number {
-  return BTTF_TRILOGY_IDS.has(id) ? 15 : 20;
+function getUnitPrice(id: number, pricesMap?: Map<number, number>): number {
+  return pricesMap?.get(id) ?? 20;
 }
 
-function getDiscountRate(distinctBttfCount: number): number {
-  if (distinctBttfCount >= 3) return 0.2;
-  if (distinctBttfCount >= 2) return 0.1;
-  return 0;
+function getSubtotal(
+  items: PricedCartItem[],
+  pricesMap?: Map<number, number>,
+): number {
+  return items.reduce((acc, item) => {
+    const price = item.price ?? getUnitPrice(item.id, pricesMap);
+    return acc + price * item.quantity;
+  }, 0);
 }
 
-function getDiscountSummary(items: PricedCartItem[]): DiscountSummary {
-  const distinctBttfCount = new Set(
-    items
-      .filter((item) => BTTF_TRILOGY_IDS.has(item.id))
-      .map((item) => item.id),
-  ).size;
+function calculateCartPricing(
+  items: PricedCartItem[],
+  pricesMap?: Map<number, number>,
+  bestDiscount?: typeof schema.discounts.$inferSelect | null,
+): CartPricingSummary {
+  const subtotal = getSubtotal(items, pricesMap);
 
-  const discountRate = getDiscountRate(distinctBttfCount);
+  if (!bestDiscount || items.length === 0) {
+    return { subtotal, discountAmount: 0, discountRate: 0, total: subtotal };
+  }
 
-  const bttfSubtotal = items
-    .filter((item) => BTTF_TRILOGY_IDS.has(item.id))
-    .reduce((sum, item) => sum + getUnitPrice(item.id) * item.quantity, 0);
-
-  const discountAmount = bttfSubtotal * discountRate;
-
-  return { discountRate, discountAmount };
-}
-
-function getSubtotal(items: PricedCartItem[]): number {
-  return items.reduce(
-    (sum, item) => sum + getUnitPrice(item.id) * item.quantity,
-    0,
+  // Identify which movies the discount applies to based on the bundles in the discount
+  const discountableIds = new Set(
+    bestDiscount.movieBundles.flat(Infinity) as number[],
   );
-}
 
-function getTotal(items: PricedCartItem[]): number {
-  const subtotal = getSubtotal(items);
-  const { discountAmount } = getDiscountSummary(items);
+  const discountableSubTotal = items.reduce((acc, item) => {
+    if (discountableIds.has(item.id)) {
+      const price = item.price ?? getUnitPrice(item.id, pricesMap);
+      return acc + price * item.quantity;
+    }
+    return acc;
+  }, 0);
 
-  return subtotal - discountAmount;
-}
-
-function calculateCartPricing(items: PricedCartItem[]): CartPricingSummary {
-  const subtotal = getSubtotal(items);
-  const { discountRate, discountAmount } = getDiscountSummary(items);
+  const discountAmount = discountableSubTotal * bestDiscount.discountRate;
   const total = subtotal - discountAmount;
 
-  return { subtotal, discountRate, discountAmount, total };
+  return {
+    subtotal,
+    discountRate: bestDiscount.discountRate,
+    discountAmount,
+    total,
+  };
 }
 
-export {
-  BTTF_TRILOGY_IDS,
-  getUnitPrice,
-  getDiscountRate,
-  getDiscountSummary,
-  getSubtotal,
-  getTotal,
-  calculateCartPricing,
-};
+export { getUnitPrice, getSubtotal, calculateCartPricing };
 
-export type { PricedCartItem, DiscountSummary, CartPricingSummary };
+export type {
+  PricedCartItem,
+  DiscountDef,
+  DiscountSummary,
+  CartPricingSummary,
+};

@@ -5,9 +5,11 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Skeleton } from "~/components/ui/skeleton";
 import MovieInfo from "~/components/movie-info";
-import { useMoviePrice } from "~/hooks/use-movie-price";
 import type { MovieCart } from "~/lib/types";
 import { formatCurrency } from "~/lib/utils";
+import { api } from "~/trpc/react";
+import { useMemo } from "react";
+import { useCart } from "~/hooks/use-cart";
 
 const MovieCartItem = ({
   id,
@@ -15,14 +17,16 @@ const MovieCartItem = ({
   title,
   release_date,
   quantity = 1,
-  onQuantityChange,
-  onDelete,
-}: MovieCart & {
-  onQuantityChange: (id: number, quantity: number) => void;
-  onDelete: (id: number) => void;
-}) => {
-  const { totalPrice, isLoading } = useMoviePrice(id, quantity);
-
+}: MovieCart) => {
+  const { updateQuantity, deleteFromCart } = useCart();
+  const { data, isLoading } = api.pricing.getByMovieId.useQuery(
+    { movieId: id },
+    { refetchOnWindowFocus: false },
+  );
+  const totalPrice = useMemo(() => {
+    const unitPrice = data?.price ?? 0;
+    return unitPrice * quantity;
+  }, [data, quantity]);
   return (
     <li className="border-border bg-card flex items-center gap-4 rounded-lg border p-3">
       <div className="flex min-w-0 flex-1 items-center justify-between gap-4">
@@ -31,6 +35,7 @@ const MovieCartItem = ({
           release_date={release_date}
           poster_path={poster_path}
           size="default"
+          className="[&>div:last-child]:hidden md:[&>div:last-child]:flex"
         />
 
         <div className="flex shrink-0 items-center gap-3">
@@ -48,7 +53,7 @@ const MovieCartItem = ({
             onChange={(e) => {
               const value = parseInt(e.target.value, 10);
               if (!isNaN(value) && value >= 1) {
-                onQuantityChange(id, value);
+                updateQuantity(id, value);
               }
             }}
             className="w-18"
@@ -58,7 +63,7 @@ const MovieCartItem = ({
           <Button
             variant="destructive"
             size="icon"
-            onClick={() => onDelete(id)}
+            onClick={() => deleteFromCart(id)}
             aria-label={`Remove ${title} from cart`}
           >
             <Trash2 />
