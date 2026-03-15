@@ -1,5 +1,3 @@
-"use client";
-
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import {
   Table,
@@ -9,27 +7,29 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import type schema from "~/lib/db/schema/d1";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
+import type { MoviePrice } from "~/lib/types";
+import { formatCurrency } from "~/lib/utils";
 
-type Price = typeof schema.prices.$inferSelect;
-
-interface PricesTableProps {
-  prices: Price[];
+export function PricesTable({
+  moviePrices,
+  movieTitles,
+  title = "Movie Prices",
+  renderAction,
+}: {
+  moviePrices: MoviePrice[];
   movieTitles: Record<number, string>;
-}
-
-export function PricesTable({ prices, movieTitles }: PricesTableProps) {
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount);
-  };
-
+  title?: React.ReactNode;
+  renderAction?: (price: MoviePrice) => React.ReactNode;
+}) {
   return (
-    <Card className="col-span-full shadow-sm md:col-span-1">
+    <Card className="shadow-sm">
       <CardHeader>
-        <CardTitle>Movie Prices</CardTitle>
+        <CardTitle>{title}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="rounded-md border">
@@ -38,17 +38,25 @@ export function PricesTable({ prices, movieTitles }: PricesTableProps) {
               <TableRow>
                 <TableHead>Movie</TableHead>
                 <TableHead className="text-right">Price</TableHead>
+                {renderAction && <TableHead></TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
-              {prices.map((price) => (
-                <TableRow
-                  key={price.movieId}
-                  className={price.movieId === 0 ? "text-muted-foreground" : ""}
-                >
+              {moviePrices.map((price) => (
+                <TableRow key={price.movieId}>
                   <TableCell>
                     {price.movieId === 0 ? (
-                      <span className="font-mono">DEFAULT_PRICE</span>
+                      <Tooltip>
+                        <TooltipTrigger className="cursor-help">
+                          <span className="text-muted-foreground font-mono">
+                            DEFAULT_PRICE
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent className="font-medium">
+                          This price applies to all movies that don&apos;t have
+                          a specific price configured.
+                        </TooltipContent>
+                      </Tooltip>
                     ) : (
                       <span className="font-medium">
                         {movieTitles[price.movieId] ??
@@ -59,12 +67,17 @@ export function PricesTable({ prices, movieTitles }: PricesTableProps) {
                   <TableCell className="text-right font-bold">
                     {formatCurrency(price.price)}
                   </TableCell>
+                  {renderAction && (
+                    <TableCell className="text-right">
+                      {renderAction(price)}
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
-              {prices.length === 0 && (
+              {moviePrices.length === 0 && (
                 <TableRow>
                   <TableCell
-                    colSpan={2}
+                    colSpan={renderAction ? 3 : 2}
                     className="text-muted-foreground py-6 text-center"
                   >
                     No prices configured.

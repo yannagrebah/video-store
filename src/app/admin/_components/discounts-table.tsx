@@ -1,5 +1,3 @@
-"use client";
-
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import {
   Table,
@@ -10,19 +8,21 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { Badge } from "~/components/ui/badge";
-import type schema from "~/lib/db/schema/d1";
+import type { Discount } from "~/lib/types";
 
-type Discount = typeof schema.discounts.$inferSelect;
-
-interface DiscountsTableProps {
+export function DiscountsTable({
+  discounts,
+  title = "Active Discounts",
+  renderActions,
+}: {
   discounts: Discount[];
-}
-
-export function DiscountsTable({ discounts }: DiscountsTableProps) {
+  title?: React.ReactNode;
+  renderActions?: (discount: Discount) => React.ReactNode;
+}) {
   return (
-    <Card className="col-span-full shadow-sm md:col-span-2">
+    <Card className="shadow-sm">
       <CardHeader>
-        <CardTitle>Active Discounts</CardTitle>
+        <CardTitle>{title}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="rounded-md border">
@@ -47,12 +47,17 @@ export function DiscountsTable({ discounts }: DiscountsTableProps) {
                       {(discount.discountRate * 100).toFixed(0)}% OFF
                     </Badge>
                   </TableCell>
+                  {renderActions && (
+                    <TableCell className="text-right">
+                      {renderActions(discount)}
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
               {discounts.length === 0 && (
                 <TableRow>
                   <TableCell
-                    colSpan={3}
+                    colSpan={renderActions ? 4 : 3}
                     className="text-muted-foreground py-6 text-center"
                   >
                     No discounts configured.

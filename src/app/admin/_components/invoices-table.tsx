@@ -1,5 +1,3 @@
-"use client";
-
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import {
   Table,
@@ -11,34 +9,34 @@ import {
 } from "~/components/ui/table";
 import { Badge } from "~/components/ui/badge";
 import type schema from "~/lib/db/schema/d1";
+import { formatCurrency } from "~/lib/utils";
 
 type Invoice = typeof schema.invoices.$inferSelect;
 
-interface RecentInvoicesProps {
+export function InvoicesTable({
+  invoices,
+  title = "Recent Invoices",
+  limit = 5,
+  renderActions,
+}: {
   invoices: Invoice[];
-}
+  title?: React.ReactNode;
+  limit?: number;
+  renderActions?: (invoice: Invoice) => React.ReactNode;
+}) {
+  const sortedInvoices = [...invoices].sort((a, b) => {
+    const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+    const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+    return dateB - dateA;
+  });
 
-export function InvoicesTable({ invoices }: RecentInvoicesProps) {
-  // Show only the last 5 invoices, sorted by descending date
-  const recentInvoices = [...invoices]
-    .sort((a, b) => {
-      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-      return dateB - dateA;
-    })
-    .slice(0, 5);
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount);
-  };
+  const displayedInvoices =
+    limit > 0 ? sortedInvoices.slice(0, limit) : sortedInvoices;
 
   return (
-    <Card className="col-span-full shadow-sm">
+    <Card className="shadow-sm">
       <CardHeader>
-        <CardTitle>Recent Invoices</CardTitle>
+        <CardTitle>{title}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="rounded-md border">
@@ -50,10 +48,11 @@ export function InvoicesTable({ invoices }: RecentInvoicesProps) {
                 <TableHead>Subtotal</TableHead>
                 <TableHead>Discount</TableHead>
                 <TableHead className="text-right">Total</TableHead>
+                {renderActions && <TableHead></TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
-              {recentInvoices.map((invoice) => (
+              {displayedInvoices.map((invoice) => (
                 <TableRow key={invoice.id}>
                   <TableCell className="font-medium">#{invoice.id}</TableCell>
                   <TableCell>
@@ -87,12 +86,17 @@ export function InvoicesTable({ invoices }: RecentInvoicesProps) {
                   <TableCell className="text-right font-bold">
                     {formatCurrency(invoice.total)}
                   </TableCell>
+                  {renderActions && (
+                    <TableCell className="text-right">
+                      {renderActions(invoice)}
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
-              {recentInvoices.length === 0 && (
+              {displayedInvoices.length === 0 && (
                 <TableRow>
                   <TableCell
-                    colSpan={5}
+                    colSpan={renderActions ? 6 : 5}
                     className="text-muted-foreground py-6 text-center"
                   >
                     No invoices found.
