@@ -37,14 +37,14 @@ export default function RootLayout({
           <TRPCReactProvider>
             <main className="bg-chart-1/25 min-h-screen">
               <nav className="bg-background/50 sticky top-0 z-10 inline-grid w-full grid-cols-2 items-center border-b px-4 py-3 backdrop-blur md:px-8">
-                <Link href="/">
+                <Link href="/admin">
                   <h1 className="font-display text-2xl font-bold tracking-tight uppercase">
                     VideoStore
                   </h1>
                 </Link>
                 <div className="flex justify-end gap-2">
                   <Button variant="ghost" className="hover:bg-muted/50" asChild>
-                    <Link href="/admin">Dashboard</Link>
+                    <Link href="/">View Store</Link>
                   </Button>
                 </div>
               </nav>
