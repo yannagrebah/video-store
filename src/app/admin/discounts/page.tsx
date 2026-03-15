@@ -9,7 +9,7 @@ export default async function DiscountsPage() {
   const discounts = await api.discount.getAll();
 
   return (
-    <section className="bg-background mx-auto h-[calc(100vh-4rem)] max-w-4xl space-y-6 p-4 md:p-8">
+    <section className="bg-background mx-auto h-[calc(100vh-4rem)] w-full max-w-4xl space-y-6 p-4 md:min-w-4xl md:p-8">
       <div>
         <h2 className="text-3xl font-bold tracking-tight">Discounts</h2>
         <p className="text-muted-foreground">

@@ -27,7 +27,7 @@ export default async function PricesPage() {
   );
 
   return (
-    <section className="bg-background mx-auto h-[calc(100vh-4rem)] max-w-4xl space-y-6 p-4 md:p-8">
+    <section className="bg-background mx-auto h-[calc(100vh-4rem)] space-y-6 p-4 md:min-w-4xl md:p-8">
       <div>
         <h2 className="text-3xl font-bold tracking-tight">Prices</h2>
         <p className="text-muted-foreground">
