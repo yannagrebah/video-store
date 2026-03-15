@@ -5,7 +5,7 @@ import { TopMoviesChart } from "./_components/top-movies-chart";
 import { InvoicesTable } from "./_components/invoices-table";
 import { PricesTable } from "./_components/prices-table";
 import { DiscountsTable } from "./_components/discounts-table";
-import { Button } from "~/components/ui/button";
+import { ArrowRight } from "lucide-react";
 
 export default async function Admin() {
   const [invoices, prices, discounts] = await Promise.all([
@@ -69,37 +69,51 @@ export default async function Admin() {
   );
 
   return (
-    <main className="bg-chart-1/25 min-h-screen">
-      <nav className="bg-background/50 sticky top-0 z-10 inline-grid w-full grid-cols-2 items-center border-b px-4 py-3 backdrop-blur md:px-8">
-        <Link href="/">
-          <h1 className="font-display text-2xl font-bold tracking-tight uppercase">
-            VideoStore
-          </h1>
+    <section className="mx-auto max-w-7xl space-y-6 p-4 md:p-8">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
+        <GrossRevenueChart invoices={invoices} />
+        <TopMoviesChart data={topMoviesData} />
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <Link href="/admin/prices" className="group">
+          <PricesTable
+            moviePrices={prices}
+            movieTitles={movieTitles}
+            title={
+              <span className="flex items-center gap-1">
+                Movie Prices
+                <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+              </span>
+            }
+          />
         </Link>
-        <Button
-          variant="ghost"
-          className="hover:bg-muted/50 justify-self-end"
-          asChild
-        >
-          <Link href="/admin">Admin Dashboard</Link>
-        </Button>
-      </nav>
+        <Link href="/admin/discounts" className="group md:col-span-2">
+          <DiscountsTable
+            discounts={discounts}
+            title={
+              <span className="flex items-center gap-1">
+                Active Discounts
+                <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+              </span>
+            }
+          />
+        </Link>
+      </div>
 
-      <section className="mx-auto max-w-7xl space-y-6 p-4 md:p-8">
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
-          <GrossRevenueChart invoices={invoices} />
-          <TopMoviesChart data={topMoviesData} />
-        </div>
-
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          <PricesTable prices={prices} movieTitles={movieTitles} />
-          <DiscountsTable discounts={discounts} />
-        </div>
-
-        <div className="grid grid-cols-1 gap-6">
-          <InvoicesTable invoices={invoices} />
-        </div>
-      </section>
-    </main>
+      <div className="grid grid-cols-1 gap-6">
+        <Link href="/admin/invoices" className="group">
+          <InvoicesTable
+            invoices={invoices}
+            title={
+              <span className="flex items-center gap-1">
+                Recent Invoices
+                <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+              </span>
+            }
+          />
+        </Link>
+      </div>
+    </section>
   );
 }

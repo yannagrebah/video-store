@@ -5,6 +5,8 @@ import { Audiowide, Roboto } from "next/font/google";
 
 import { TRPCReactProvider } from "~/trpc/react";
 import { TooltipProvider } from "~/components/ui/tooltip";
+import { Button } from "~/components/ui/button";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Video Store",
@@ -30,7 +32,23 @@ export default function RootLayout({
     <html lang="en" className={`${roboto.variable} ${audiowide.variable}`}>
       <body>
         <TooltipProvider>
-          <TRPCReactProvider>{children}</TRPCReactProvider>
+          <TRPCReactProvider>
+            <main className="bg-chart-1/25 min-h-screen">
+              <nav className="bg-background/50 sticky top-0 z-10 inline-grid w-full grid-cols-2 items-center border-b px-4 py-3 backdrop-blur md:px-8">
+                <Link href="/">
+                  <h1 className="font-display text-2xl font-bold tracking-tight uppercase">
+                    VideoStore
+                  </h1>
+                </Link>
+                <div className="flex justify-end gap-2">
+                  <Button variant="ghost" className="hover:bg-muted/50" asChild>
+                    <Link href="/admin">Dashboard</Link>
+                  </Button>
+                </div>
+              </nav>
+              {children}
+            </main>
+          </TRPCReactProvider>
         </TooltipProvider>
       </body>
     </html>
