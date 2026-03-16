@@ -87,6 +87,8 @@ type MoviePrice = typeof schema.prices.$inferSelect;
 
 type Discount = typeof schema.discounts.$inferSelect;
 
+type Invoice = typeof schema.invoices.$inferSelect;
+
 interface MovieCart extends Movie {
   quantity: number;
 }
@@ -98,6 +100,7 @@ export type {
   MovieDetails,
   MoviePrice,
   Discount,
+  Invoice,
 };
 export {
   movieSchema,
