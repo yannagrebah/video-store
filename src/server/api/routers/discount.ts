@@ -2,31 +2,10 @@ import { z } from "zod";
 import { eq } from "drizzle-orm";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
-import type schema from "~/lib/db/schema/d1";
 import { discounts } from "~/lib/db/schema/d1";
 import { discountSchema } from "~/lib/types";
+import { getBestDiscount } from "~/lib/pricing";
 
-export const getBestDiscount = (
-  movieIds: number[],
-  discounts: (typeof schema.discounts.$inferSelect)[],
-) => {
-  // Filter discounts that apply to the given movie IDs
-  const applicableDiscounts = discounts.filter((discount) =>
-    discount.movieBundles.some((bundle) =>
-      [bundle].flat(2).every((movieId) => movieIds.includes(movieId)),
-    ),
-  );
-  if (applicableDiscounts.length === 0) {
-    return null;
-  }
-
-  // Return only the best discount
-  const bestDiscount = applicableDiscounts.reduce((best, current) =>
-    current.discountRate > best.discountRate ? current : best,
-  );
-
-  return bestDiscount;
-};
 export const discountRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx: { db } }) => {
     try {

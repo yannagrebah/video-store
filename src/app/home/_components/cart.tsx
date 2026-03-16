@@ -1,31 +1,38 @@
 "use client";
 
-import { Button } from "~/components/ui/button";
-import MovieOrder from "./movie-order";
 import { useAtom } from "jotai";
-import { cartAtom } from "~/lib/atoms";
-import { api } from "~/trpc/react";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { Button } from "~/components/ui/button";
+import { cartAtom } from "~/lib/atoms";
+import { api } from "~/trpc/react";
+import MovieOrder from "./movie-order";
 
 const Cart = () => {
   const [cartItems, setCartItems] = useAtom(cartAtom);
-  const { mutateAsync, isPending } = api.invoice.create.useMutation({
-    onSuccess: () => {
-      setCartItems([]);
-    },
-  });
   const router = useRouter();
 
-  async function handleConfirm() {
-    const results = await mutateAsync({ items: cartItems });
-    if (!results) {
-      alert(
+  const { mutate, isPending } = api.invoice.create.useMutation({
+    onSuccess: (results) => {
+      if (!results?.id) {
+        toast.error(
+          "An error occurred while processing your purchase. Please try again.",
+        );
+        return;
+      }
+      router.push(`/?purchaseSuccess=${results.id}`);
+      setCartItems([]);
+    },
+    onError: () => {
+      toast.error(
         "An error occurred while processing your purchase. Please try again.",
       );
-      return;
-    }
-    router.push(`/?purchaseSuccess=${results.id}`);
+    },
+  });
+  async function handleConfirm() {
+    if (cartItems.length === 0) return;
+    mutate({ items: cartItems });
   }
   return (
     <>

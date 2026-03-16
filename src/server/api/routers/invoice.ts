@@ -3,12 +3,11 @@ import { eq } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
-import { calculateCartPricing } from "~/lib/pricing";
+import { calculateCartPricing, getBestDiscount } from "~/lib/pricing";
 import { generateInvoicePdf } from "~/lib/generate-invoice-pdf";
 import { invoices } from "~/lib/db/schema/d1";
 import { fetchTMDB } from "./movie";
 import { invoiceSchema, movieDetailsSchema } from "~/lib/types";
-import { getBestDiscount } from "./discount";
 
 export const invoiceRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx: { db } }) => {

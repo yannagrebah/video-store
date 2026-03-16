@@ -227,11 +227,15 @@ function UpsertDiscountDialog({
                             className="bg-muted flex items-center justify-between rounded-md p-2 text-sm"
                           >
                             <div className="flex flex-wrap gap-1">
-                              {bundle.map((id) => (
-                                <Badge key={id} variant="outline">
-                                  ID: {id}
-                                </Badge>
-                              ))}
+                              {Array.isArray(bundle) ? (
+                                bundle.map((id) => (
+                                  <Badge key={id} variant="secondary">
+                                    ID: {id}
+                                  </Badge>
+                                ))
+                              ) : (
+                                <Badge variant="secondary">ID: {bundle}</Badge>
+                              )}
                             </div>
                             <Button
                               type="button"
