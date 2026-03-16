@@ -7,6 +7,8 @@
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
 ![Cloudflare](https://img.shields.io/badge/Cloudflare-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)
 
+<img width="640" height="480" alt="Screenshot 2026-03-16 at 13-13-17 Video Store" src="https://github.com/user-attachments/assets/11ee4264-1670-434f-953d-f963fef4b493" /> <img width="296" height="370" alt="Screenshot 2026-03-16 at 13-14-14 Video Store" src="https://github.com/user-attachments/assets/e85e829c-d078-45d4-8d37-0d47f276f08d" />
+
 A modern, full-stack video storefront built with the **T3 Stack** and designed to be deployed on **Cloudflare's edge network**. 
 
 This platform allows users to browse and purchase movies, while providing administrators with a powerful dashboard to manage the store's inventory, analytics, and user interactions.
@@ -47,25 +49,31 @@ Follow these steps to get the project running on your local machine.
 
 1. **Clone the repository:**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/yannagrebah/video-store.git
    cd video-store
    ```
 
 2. **Set up environment variables:**
+
    Create a `.env` file in the root of the project and add any necessary environment variables (e.g., API keys, database credentials). Refer to `.env.example` for required variables.
 
-3. **Install dependencies:**
+4. **Install dependencies:**
    ```bash
    npm install
    ```
 
 4.a **Start the development server:**
+   
    Run Next.js locally with Turbo:
+   
    ```bash
    npm run dev
    ```
+
 4.b **Start Cloudflare Preview:**
+   
    Run the project in a Cloudflare Workers environment locally:
+   
    ```bash
    npm run preview
    ```
@@ -81,6 +89,7 @@ To deploy to your own Cloudflare account:
    npx wrangler login
    ```
 2. Provision your D1 database in the Cloudflare dashboard and update the `database_id` in `wrangler.jsonc`.
+
 3. Run the deployment script:
    ```bash
    npm deploy
@@ -89,10 +98,10 @@ To deploy to your own Cloudflare account:
 ## 🧪 Testing
 
 We use Jest to ensure application reliability.
-```bash
-# Run the test suite
-npm run test
-```
+   ```bash
+   # Run the test suite
+   npm run test
+   ```
 
 ## 📁 Project Structure
 
