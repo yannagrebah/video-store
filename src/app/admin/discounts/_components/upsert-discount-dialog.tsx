@@ -50,6 +50,8 @@ function UpsertDiscountDialog({
     void util.discount.getAll.invalidate();
     router.refresh();
     setIsOpen(false);
+    form.reset();
+    setDraftBundle([]);
   };
 
   const createMutation = api.discount.create.useMutation({

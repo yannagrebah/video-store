@@ -43,6 +43,8 @@ function UpsertMoviePriceDialog({
       void util.pricing.getAll.invalidate();
       router.refresh();
       setIsOpen(false);
+      form.reset();
+      setSelectedMovie(null);
     },
   });
 
@@ -70,7 +72,7 @@ function UpsertMoviePriceDialog({
     setIsOpen(isOpen);
   }
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => handleOpenChange(open)}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
