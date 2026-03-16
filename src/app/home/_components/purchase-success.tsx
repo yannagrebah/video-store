@@ -1,6 +1,6 @@
 "use client";
 
-import { CircleCheck, Download } from "lucide-react";
+import { CircleCheck, Download, Loader2 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
@@ -90,7 +90,11 @@ const PurchaseSuccess = ({ invoiceId }: { invoiceId: string }) => {
           className="mt-2 h-12 text-2xl font-bold md:w-1/3"
           size={"lg"}
         >
-          <Download className="mr-2" size={24} />
+          {isPending ? (
+            <Loader2 className="mr-2" size={24} />
+          ) : (
+            <Download className="mr-2" size={24} />
+          )}
           {isPending ? "Generating invoice..." : "Download invoice"}
         </Button>
       </CardContent>
