@@ -51,24 +51,24 @@ export const discountRouter = createTRPCRouter({
     }),
   create: publicProcedure
     .input(discountSchema.omit({ id: true }))
-    .mutation(async ({ ctx: { db }, input }) => {
-      const result = await db
-        .insert(discounts)
-        .values({
-          label: input.label,
-          discountRate: input.discountRate,
-          movieBundles: input.movieBundles,
-        })
-        .returning();
+    .mutation(
+      async ({ ctx: { db }, input: { label, discountRate, movieBundles } }) => {
+        const result = await db
+          .insert(discounts)
+          .values({
+            label,
+            discountRate,
+            movieBundles,
+          })
+          .returning();
 
-      return result[0];
-    }),
+        return result[0];
+      },
+    ),
 
   update: publicProcedure
     .input(discountSchema)
-    .mutation(async ({ ctx: { db }, input }) => {
-      const { id, ...updateData } = input;
-
+    .mutation(async ({ ctx: { db }, input: { id, ...updateData } }) => {
       const result = await db
         .update(discounts)
         .set(updateData)

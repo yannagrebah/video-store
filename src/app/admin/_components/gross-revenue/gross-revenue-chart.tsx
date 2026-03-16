@@ -19,7 +19,7 @@ export function GrossRevenueChart({ invoices }: GrossRevenueChartProps) {
       (acc, invoice) => {
         if (!invoice.createdAt) return acc;
 
-        const date = new Date(invoice.createdAt).toLocaleDateString("en-US", {
+        const date = new Date(invoice.createdAt).toLocaleDateString("fr-FR", {
           month: "short",
           day: "numeric",
           year: "numeric",
@@ -63,7 +63,7 @@ export function GrossRevenueChart({ invoices }: GrossRevenueChartProps) {
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              tickFormatter={(value) => `$${value}`}
+              tickFormatter={(value) => `${value} €`}
             />
             <ChartTooltip content={<ChartTooltipContent />} />
             <Line
