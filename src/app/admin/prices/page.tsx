@@ -47,8 +47,6 @@ export default async function PricesPage() {
         </div>
 
         <PricesTable
-          moviePrices={moviePrices}
-          movieTitles={movieTitles}
           title={null}
           renderAction={(price) => (
             <div className="flex justify-end gap-2">

@@ -1,13 +1,10 @@
 import { Pencil, Plus } from "lucide-react";
 import { Button } from "~/components/ui/button";
-import { api } from "~/trpc/server";
 import { DiscountsTable } from "../_components/discounts-table";
 import ConfirmDeleteDialog from "./_components/confirm-delete-dialog";
 import UpsertDiscountDialog from "./_components/upsert-discount-dialog";
 
-export default async function DiscountsPage() {
-  const discounts = await api.discount.getAll();
-
+export default function DiscountsPage() {
   return (
     <section className="bg-background mx-auto h-[calc(100vh-4rem)] w-full max-w-4xl space-y-6 p-4 md:min-w-4xl md:p-8">
       <div>
@@ -29,7 +26,6 @@ export default async function DiscountsPage() {
         </div>
 
         <DiscountsTable
-          discounts={discounts}
           title={null}
           renderActions={(discount) => (
             <div className="flex justify-end gap-2">
