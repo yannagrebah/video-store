@@ -9,16 +9,17 @@ import {
 } from "~/components/ui/table";
 import { Badge } from "~/components/ui/badge";
 import type { Discount } from "~/lib/types";
+import { api } from "~/trpc/server";
 
-export function DiscountsTable({
-  discounts,
+export async function DiscountsTable({
   title = "Active Discounts",
   renderActions,
 }: {
-  discounts: Discount[];
   title?: React.ReactNode;
   renderActions?: (discount: Discount) => React.ReactNode;
 }) {
+  const discounts = await api.discount.getAll();
+
   return (
     <Card className="shadow-sm">
       <CardHeader>

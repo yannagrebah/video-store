@@ -8,22 +8,21 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { Badge } from "~/components/ui/badge";
-import type schema from "~/lib/db/schema/d1";
 import { formatCurrency } from "~/lib/utils";
+import { api } from "~/trpc/server";
+import type { Invoice } from "~/lib/types";
 
-type Invoice = typeof schema.invoices.$inferSelect;
-
-export function InvoicesTable({
-  invoices,
+export async function InvoicesTable({
   title = "Recent Invoices",
   limit = 5,
   renderActions,
 }: {
-  invoices: Invoice[];
   title?: React.ReactNode;
   limit?: number;
   renderActions?: (invoice: Invoice) => React.ReactNode;
 }) {
+  const invoices = await api.invoice.getAll();
+
   const sortedInvoices = [...invoices].sort((a, b) => {
     const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
     const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;

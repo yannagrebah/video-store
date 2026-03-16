@@ -14,18 +14,34 @@ import {
 } from "~/components/ui/tooltip";
 import type { MoviePrice } from "~/lib/types";
 import { formatCurrency } from "~/lib/utils";
+import { api } from "~/trpc/server";
 
-export function PricesTable({
-  moviePrices,
-  movieTitles,
+export async function PricesTable({
   title = "Movie Prices",
   renderAction,
 }: {
-  moviePrices: MoviePrice[];
-  movieTitles: Record<number, string>;
   title?: React.ReactNode;
   renderAction?: (price: MoviePrice) => React.ReactNode;
 }) {
+  const moviePrices = await api.pricing.getAll();
+
+  const movieTitles: Record<number, string> = {};
+  await Promise.all(
+    moviePrices.map(async (price) => {
+      if (price.movieId > 0) {
+        try {
+          const movie = await api.movie.getMovieDetails({
+            id: price.movieId,
+            credits: false,
+          });
+          movieTitles[price.movieId] = movie.title;
+        } catch {
+          movieTitles[price.movieId] = `Movie ID: ${price.movieId}`;
+        }
+      }
+    }),
+  );
+
   return (
     <Card className="shadow-sm">
       <CardHeader>
