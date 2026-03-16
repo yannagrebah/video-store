@@ -5,7 +5,7 @@ import { Loader2, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { z } from "zod";
-
+import { toast } from "sonner";
 import MovieSearchInput from "~/components/movie-search-input";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
@@ -24,11 +24,8 @@ import {
   FieldError,
 } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
-import { discountSchema, type Movie } from "~/lib/types";
+import { discountSchema, type Discount, type Movie } from "~/lib/types";
 import { api } from "~/trpc/react";
-import type schema from "~/lib/db/schema/d1";
-
-type Discount = typeof schema.discounts.$inferSelect;
 
 function UpsertDiscountDialog({
   children,
@@ -49,17 +46,25 @@ function UpsertDiscountDialog({
   const handleSuccess = () => {
     void util.discount.getAll.invalidate();
     router.refresh();
+    toast.success(`Discount ${discount ? "updated" : "created"} successfully!`);
     setIsOpen(false);
     form.reset();
     setDraftBundle([]);
   };
+  const handleError = () => {
+    toast.error(
+      `Failed to ${discount ? "update" : "create"} discount. Please try again.`,
+    );
+  };
 
   const createMutation = api.discount.create.useMutation({
     onSuccess: handleSuccess,
+    onError: handleError,
   });
 
   const updateMutation = api.discount.update.useMutation({
     onSuccess: handleSuccess,
+    onError: handleError,
   });
 
   const isPending = useMemo(

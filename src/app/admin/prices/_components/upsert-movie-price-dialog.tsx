@@ -4,6 +4,7 @@ import { useForm } from "@tanstack/react-form";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 import MovieInfo from "~/components/movie-info";
 import MovieSearchInput from "~/components/movie-search-input";
 import { Button } from "~/components/ui/button";
@@ -42,9 +43,15 @@ function UpsertMoviePriceDialog({
     onSuccess: () => {
       void util.pricing.getAll.invalidate();
       router.refresh();
+      toast.success(`Price ${moviePrice ? "updated" : "added"} successfully!`);
       setIsOpen(false);
       form.reset();
       setSelectedMovie(null);
+    },
+    onError: () => {
+      toast.error(
+        `Failed to ${moviePrice ? "update" : "add"} price. Please try again.`,
+      );
     },
   });
 
