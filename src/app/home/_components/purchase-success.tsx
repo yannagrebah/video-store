@@ -91,7 +91,11 @@ const PurchaseSuccess = ({ invoiceId }: { invoiceId: string }) => {
           size={"lg"}
         >
           {isPending ? (
-            <Loader2 className="mr-2" size={24} />
+            <Loader2
+              className="mr-2 animate-spin"
+              size={24}
+              aria-hidden="true"
+            />
           ) : (
             <Download className="mr-2" size={24} />
           )}
