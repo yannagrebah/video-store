@@ -110,10 +110,15 @@ export const invoiceRouter = createTRPCRouter({
       }
       const lineItems = await Promise.all(
         invoice.items.map(async (item) => {
-          const movieDetails = movieDetailsSchema.safeParse(
-            await fetchTMDB(`/movie/${item.movieId}`),
-          );
-          const title = movieDetails.data?.title ?? `Movie ID ${item.movieId}`;
+          let title = `Movie ID ${item.movieId}`;
+          try {
+            const movieDetails = movieDetailsSchema.safeParse(
+              await fetchTMDB(`/movie/${item.movieId}`),
+            );
+            title = movieDetails.data?.title ?? `Movie ID ${item.movieId}`;
+          } catch (error) {
+            console.error(error);
+          }
           return {
             title,
             quantity: item.quantity,
