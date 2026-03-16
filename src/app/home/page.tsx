@@ -1,9 +1,5 @@
 import { HydrateClient } from "~/trpc/server";
 import Cart from "./_components/cart";
-import Link from "next/link";
-import { Button } from "~/components/ui/button";
-import MovieAIAgent from "~/components/movie-ai-agent";
-import { Bot } from "lucide-react";
 import PurchaseSuccess from "./_components/purchase-success";
 
 export default async function Home({
