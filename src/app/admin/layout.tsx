@@ -9,6 +9,7 @@ import { Button } from "~/components/ui/button";
 import Link from "next/link";
 import { SidebarProvider, SidebarTrigger } from "~/components/ui/sidebar";
 import { AdminSidebar } from "./_components/admin-sidebar";
+import { Toaster } from "~/components/ui/sonner";
 
 export const metadata: Metadata = {
   title: "Video Store",
@@ -52,6 +53,7 @@ export default function RootLayout({
                 <AdminSidebar />
                 <SidebarTrigger className="hidden md:block" />
                 {children}
+                <Toaster richColors position="top-center" />
               </SidebarProvider>
             </main>
           </TRPCReactProvider>

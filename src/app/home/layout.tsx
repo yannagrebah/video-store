@@ -4,6 +4,7 @@ import { Audiowide, Roboto } from "next/font/google";
 import Link from "next/link";
 import MovieAIAgent from "~/components/movie-ai-agent";
 import { Button } from "~/components/ui/button";
+import { Toaster } from "~/components/ui/sonner";
 import { TooltipProvider } from "~/components/ui/tooltip";
 import "~/styles/globals.css";
 import { TRPCReactProvider } from "~/trpc/react";
@@ -56,6 +57,7 @@ export default function RootLayout({
                 </span>
               </nav>
               {children}
+              <Toaster richColors position="top-center" />
             </main>
           </TRPCReactProvider>
         </TooltipProvider>
