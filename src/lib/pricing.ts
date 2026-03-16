@@ -70,7 +70,29 @@ function calculateCartPricing(
   };
 }
 
-export { getUnitPrice, getSubtotal, calculateCartPricing };
+const getBestDiscount = (
+  movieIds: number[],
+  discounts: (typeof schema.discounts.$inferSelect)[],
+) => {
+  // Filter discounts that apply to the given movie IDs
+  const applicableDiscounts = discounts.filter((discount) =>
+    discount.movieBundles.some((bundle) =>
+      [bundle].flat(2).every((movieId) => movieIds.includes(movieId)),
+    ),
+  );
+  if (applicableDiscounts.length === 0) {
+    return null;
+  }
+
+  // Return only the best discount
+  const bestDiscount = applicableDiscounts.reduce((best, current) =>
+    current.discountRate > best.discountRate ? current : best,
+  );
+
+  return bestDiscount;
+};
+
+export { getUnitPrice, getSubtotal, calculateCartPricing, getBestDiscount };
 
 export type {
   PricedCartItem,
