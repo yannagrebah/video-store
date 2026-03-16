@@ -7,20 +7,8 @@ import { calculateCartPricing } from "~/lib/pricing";
 import { generateInvoicePdf } from "~/lib/generate-invoice-pdf";
 import { invoices } from "~/lib/db/schema/d1";
 import { fetchTMDB } from "./movie";
-import { movieDetailsSchema } from "~/lib/types";
+import { invoiceSchema, movieDetailsSchema } from "~/lib/types";
 import { getBestDiscount } from "./discount";
-
-const createInvoiceInputSchema = z.object({
-  items: z
-    .array(
-      z.object({
-        id: z.number(),
-        title: z.string().min(1),
-        quantity: z.number().int().min(1),
-      }),
-    )
-    .min(1),
-});
 
 export const invoiceRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx: { db } }) => {
@@ -52,7 +40,7 @@ export const invoiceRouter = createTRPCRouter({
     }),
 
   create: publicProcedure
-    .input(createInvoiceInputSchema)
+    .input(invoiceSchema)
     .mutation(async ({ ctx: { db }, input }) => {
       // First fetch applicable prices map
       const movieIds = Array.from(new Set(input.items.map((i) => i.id)));

@@ -31,7 +31,7 @@ const MovieInfo = ({
       >
         {poster_path ? (
           <Image
-            src={`https://image.tmdb.org/t/p/w92${poster_path}`}
+            src={`https://image.tmdb.org/t/p/original${poster_path}`}
             alt={`${title} poster`}
             fill
             className="object-cover"

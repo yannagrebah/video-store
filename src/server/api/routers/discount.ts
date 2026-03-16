@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import type schema from "~/lib/db/schema/d1";
 import { discounts } from "~/lib/db/schema/d1";
+import { discountSchema } from "~/lib/types";
 
 export const getBestDiscount = (
   movieIds: number[],
@@ -70,13 +71,7 @@ export const discountRouter = createTRPCRouter({
       }
     }),
   create: publicProcedure
-    .input(
-      z.object({
-        label: z.string().min(1),
-        discountRate: z.number().min(0).max(1),
-        movieBundles: z.array(z.array(z.number())),
-      }),
-    )
+    .input(discountSchema.omit({ id: true }))
     .mutation(async ({ ctx: { db }, input }) => {
       const result = await db
         .insert(discounts)
@@ -91,14 +86,7 @@ export const discountRouter = createTRPCRouter({
     }),
 
   update: publicProcedure
-    .input(
-      z.object({
-        id: z.number(),
-        label: z.string().min(1).optional(),
-        discountRate: z.number().min(0).max(1).optional(),
-        movieBundles: z.array(z.array(z.number())).optional(),
-      }),
-    )
+    .input(discountSchema)
     .mutation(async ({ ctx: { db }, input }) => {
       const { id, ...updateData } = input;
 
