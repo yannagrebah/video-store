@@ -1,17 +1,13 @@
 "use client";
-
 import { useMemo } from "react";
 import { Line, LineChart, CartesianGrid, XAxis, YAxis } from "recharts";
-
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from "~/components/ui/chart";
-import type schema from "~/lib/db/schema/d1";
-
-type Invoice = typeof schema.invoices.$inferSelect;
+import type { Invoice } from "~/lib/types";
 
 interface GrossRevenueChartProps {
   invoices: Invoice[];
